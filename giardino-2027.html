@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giardino · Lotação 2027</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--surface:#0f1419;--surface2:#161d26;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e8edf2;--muted:#5a6a7a;--muted2:#8a9bab;
+  --green:#15803d;--green-dim:#14532d;
+  --amber:#b45309;--amber-dim:#431407;
+  --red:#b91c1c;--red-dim:#450a0a;
+  --accent:#3b82f6;
+}
+html{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px}
+body{min-height:100vh;padding:20px 16px 40px;max-width:1400px;margin:0 auto}
+
+/* Header */
+.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--surface2),rgba(59,130,246,.15));border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent)}
+.logo h1{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.logo p{font-size:11px;color:var(--muted);margin-top:1px}
+.stats{display:flex;gap:20px}
+.stat{text-align:right}
+.stat-num{font-size:20px;font-weight:600;font-family:'DM Mono',monospace;line-height:1}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:1px;text-transform:uppercase;letter-spacing:.5px}
+
+/* Status */
+.status-bar{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;flex-wrap:wrap}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sdot.loading{background:var(--amber);animation:blink .8s infinite}
+.sdot.error{background:var(--red)}
+.stext{font-size:12px;color:var(--muted2);flex:1}
+.ctrack{width:80px;height:3px;background:var(--border2);border-radius:99px;overflow:hidden}
+.cfill{height:100%;background:var(--green);border-radius:99px;transition:width 1s linear}
+.clbl{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;min-width:44px}
+.btn{padding:4px 10px;font-size:11px;font-family:'DM Sans',sans-serif;background:var(--surface2);color:var(--muted2);border:1px solid var(--border2);border-radius:6px;cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--border2);color:var(--text)}
+
+/* Progress */
+.prog-wrap{margin-bottom:16px}
+.prog-track{height:3px;background:var(--border2);border-radius:99px;overflow:hidden;margin-bottom:4px}
+.prog-fill{height:100%;border-radius:99px;transition:width .8s}
+.prog-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+
+/* Month grid */
+.month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:20px}
+.month-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px}
+.month-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.month-name{font-size:12px;font-weight:600;letter-spacing:.2px}
+.mbadge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:99px;font-family:'DM Mono',monospace}
+.mbadge.g{background:rgba(21,128,61,.15);color:#4ade80}
+.mbadge.a{background:rgba(180,83,9,.15);color:#fb923c}
+.mbadge.r{background:rgba(185,28,28,.15);color:#f87171}
+.mbadge.f{background:rgba(255,255,255,.05);color:var(--muted)}
+
+/* Calendar grid inside card */
+.cal-grid{width:100%}
+.cal-grid table{width:100%;border-collapse:separate;border-spacing:2px}
+.cal-grid th{font-size:9px;font-weight:500;color:var(--muted);text-align:center;padding:0 0 5px;text-transform:uppercase;letter-spacing:.4px}
+.cal-grid td{text-align:center;padding:0;height:30px;width:14.28%}
+.chip{display:inline-flex;align-items:center;justify-content:center;width:28px;height:26px;border-radius:5px;font-size:11px;font-weight:500;font-family:'DM Mono',monospace;cursor:default;position:relative;transition:transform .1s}
+.chip:hover{transform:scale(1.15);z-index:5}
+.chip.g3{background:#14532d;color:#4ade80}
+.chip.g2{background:#166534;color:#86efac}
+.chip.am{background:#431407;color:#fb923c}
+.chip.rd{background:#450a0a;color:#f87171}
+.chip.bk{background:var(--surface2);color:var(--muted);border:1px dashed rgba(255,255,255,.08)}
+.chip.em{visibility:hidden}
+.chip[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#1e2d3d;color:var(--text);font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;border:1px solid var(--border2);z-index:20;font-family:'DM Sans',sans-serif;pointer-events:none}
+.mini-bar{height:2px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:8px}
+.mini-fill{height:100%;border-radius:99px}
+
+/* Legend */
+.legend{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding-top:14px;border-top:1px solid var(--border)}
+.leg-items{display:flex;gap:16px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted2)}
+.leg-dot{width:11px;height:11px;border-radius:3px}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">G</div>
+    <div>
+      <h1>Giardino · 2027</h1>
+      <p>Dashboard de lotação · Disponibilidade por dia</p>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="st-total" style="color:var(--muted)">—</div><div class="stat-lbl">total</div></div>
+    <div class="stat"><div class="stat-num" id="st-sold" style="color:#f87171">—</div><div class="stat-lbl">vendidas</div></div>
+    <div class="stat"><div class="stat-num" id="st-avail" style="color:#4ade80">—</div><div class="stat-lbl">disponíveis</div></div>
+    <div class="stat"><div class="stat-num" id="st-pct" style="color:#60a5fa">—</div><div class="stat-lbl">ocupação</div></div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="sdot" id="sdot"></div>
+  <span class="stext" id="stext">Carregando…</span>
+  <div class="ctrack"><div class="cfill" id="cfill" style="width:100%"></div></div>
+  <span class="clbl" id="clbl">—</span>
+  <button class="btn" onclick="load()">↺ Agora</button>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-track"><div class="prog-fill" id="pfill" style="width:0%"></div></div>
+  <div class="prog-labels"><span>0%</span><span id="plbl">carregando…</span><span>100%</span></div>
+</div>
+
+<div class="month-grid" id="month-grid"></div>
+
+<div class="legend">
+  <div class="leg-items">
+    <div class="leg"><div class="leg-dot" style="background:#14532d;border:1px solid #166534"></div> 3–4 datas livres nesse dia</div>
+    <div class="leg"><div class="leg-dot" style="background:#431407;border:1px solid #7c2d12"></div> 2 datas livres</div>
+    <div class="leg"><div class="leg-dot" style="background:#450a0a;border:1px solid #7f1d1d"></div> 1 data livre</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--surface2);border:1px dashed rgba(255,255,255,.1)"></div> Vendida</div>
+  </div>
+  <div style="font-size:11px;color:var(--muted)">Primore Eventos · Giardino</div>
+</div>
+
+<script>
+const YEAR=2027;
+const MONTHS=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DOW=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const CAL_ID="c_i9jh05ostkk3vmglbjlh7dtb8g@group.calendar.google.com";
+const API_KEY="AIzaSyBHu5yPq9Ha6EBo5SQsWDS4OuVPrH7IEFk";
+
+const REAL_EVENTS=[{"date": "2027-01-29", "title": "Stephany e João Lucas"}, {"date": "2027-01-30", "title": "Isabela e Andress"}, {"date": "2027-02-21", "title": "Tatiane e Isaias"}, {"date": "2027-03-21", "title": "Izabela & Herberet"}, {"date": "2027-03-28", "title": "Manuela & Wellington"}, {"date": "2027-04-09", "title": "Victoria & William"}, {"date": "2027-04-11", "title": "Ellen e Anderson"}, {"date": "2027-04-25", "title": "Helen e Jhonatan"}, {"date": "2027-05-01", "title": "Maria Clara & Bruno"}, {"date": "2027-05-02", "title": "Tatiana e Augusto"}, {"date": "2027-05-08", "title": "Maria Claudia & Valter"}, {"date": "2027-05-14", "title": "Tamara & Lucas"}, {"date": "2027-05-21", "title": "Karen e Victor"}, {"date": "2027-05-28", "title": "Fernanda e Bruno"}, {"date": "2027-06-06", "title": "Nayara & Leandro"}, {"date": "2027-06-19", "title": "Henrique & Roberto"}, {"date": "2027-06-25", "title": "Karoline & Igor"}, {"date": "2027-07-17", "title": "Dayana & Ewerton"}, {"date": "2027-07-24", "title": "Nanda e Isa"}, {"date": "2027-08-05", "title": "Gabrielle & Matheus"}, {"date": "2027-08-13", "title": "Camila e Mateus"}, {"date": "2027-09-04", "title": "Carla & João Victor"}, {"date": "2027-09-19", "title": "Janine & Daniel"}, {"date": "2027-10-10", "title": "Camila & Rodrigo"}];
+
+let cdTimer=null,cdSec=0;
+
+function buildBookedMap(items){
+  const bym=Array.from({length:12},()=>new Map());
+  (items||[]).forEach(ev=>{
+    const ds=(ev.start?.date||ev.start?.dateTime||ev.date||'').slice(0,10);
+    if(!ds)return;
+    const d=new Date(ds+'T12:00:00');
+    if(d.getFullYear()===YEAR)bym[d.getMonth()].set(d.getDate(),ev.title||ev.summary||'');
+  });
+  return bym;
+}
+
+function chipCls(availInDow,booked){
+  if(booked)return'bk';
+  if(availInDow>=3)return'g3';
+  if(availInDow===2)return'am';
+  if(availInDow===1)return'rd';
+  return'g3';
+}
+
+function render(bym){
+  const grid=document.getElementById('month-grid');
+  grid.innerHTML='';
+  let tS=0,tB=0;
+
+  MONTHS.forEach((name,mi)=>{
+    const bmap=bym[mi];
+    // Build calendar matrix
+    const firstDow=new Date(YEAR,mi,1).getDay();
+    const daysInMonth=new Date(YEAR,mi+1,0).getDate();
+
+    // Count days by dow
+    const dowDays=Array.from({length:7},()=>[]);
+    for(let d=1;d<=daysInMonth;d++) dowDays[new Date(YEAR,mi,d).getDay()].push(d);
+
+    const allDays=Array.from({length:daysInMonth},(_,i)=>i+1);
+    const sold=allDays.filter(d=>bmap.has(d)).length;
+    const avail=daysInMonth-sold;
+    tS+=daysInMonth;tB+=sold;
+
+    const ratio=sold/daysInMonth;
+    const barColor=avail===0?'var(--red)':ratio>=.65?'var(--amber)':'var(--green)';
+    let bc,bt;
+    if(avail===0){bc='f';bt='Lotado'}
+    else if(ratio>=.65){bc='a';bt=avail+'/'+daysInMonth}
+    else if(ratio>=.4){bc='a';bt=avail+'/'+daysInMonth}
+    else{bc='g';bt=avail+'/'+daysInMonth}
+
+    const card=document.createElement('div');
+    card.className='month-card';
+    card.innerHTML=`<div class="month-header"><span class="month-name">${name}</span><span class="mbadge ${bc}">${bt}</span></div>`;
+
+    // Build calendar table
+    const table=document.createElement('table');
+    // header row
+    const thead=document.createElement('thead');
+    thead.innerHTML='<tr>'+DOW.map(d=>`<th>${d}</th>`).join('')+'</tr>';
+    table.appendChild(thead);
+
+    const tbody=document.createElement('tbody');
+    let day=1;
+    let row=document.createElement('tr');
+    // padding cells before first day
+    for(let i=0;i<firstDow;i++){
+      const td=document.createElement('td');
+      td.innerHTML='<span class="chip em">·</span>';
+      row.appendChild(td);
+    }
+    let col=firstDow;
+    while(day<=daysInMonth){
+      if(col===7){tbody.appendChild(row);row=document.createElement('tr');col=0;}
+      const dow=new Date(YEAR,mi,day).getDay();
+      const availInDow=dowDays[dow].filter(d=>!bmap.has(d)).length;
+      const isBooked=bmap.has(day);
+      const title=bmap.get(day)||'';
+      const cls=chipCls(availInDow,isBooked);
+      const td=document.createElement('td');
+      const chip=document.createElement('span');
+      chip.className='chip '+cls;
+      chip.textContent=day;
+      if(isBooked&&title)chip.setAttribute('data-tip',title);
+      td.appendChild(chip);
+      row.appendChild(td);
+      day++;col++;
+    }
+    // padding cells after last day
+    while(col>0&&col<7){
+      const td=document.createElement('td');
+      td.innerHTML='<span class="chip em">·</span>';
+      row.appendChild(td);
+      col++;
+    }
+    if(row.children.length)tbody.appendChild(row);
+    table.appendChild(tbody);
+
+    const calDiv=document.createElement('div');
+    calDiv.className='cal-grid';
+    calDiv.appendChild(table);
+    card.appendChild(calDiv);
+
+    card.innerHTML+=`<div class="mini-bar"><div class="mini-fill" style="width:${Math.round(ratio*100)}%;background:${barColor}"></div></div>`;
+    grid.appendChild(card);
+  });
+
+  const pct=tS?Math.round(tB/tS*100):0;
+  document.getElementById('st-total').textContent=tS;
+  document.getElementById('st-sold').textContent=tB;
+  document.getElementById('st-avail').textContent=tS-tB;
+  document.getElementById('st-pct').textContent=pct+'%';
+  const pf=document.getElementById('pfill');
+  pf.style.width=pct+'%';
+  pf.style.background=pct>75?'var(--red)':pct>50?'var(--amber)':'var(--accent)';
+  document.getElementById('plbl').textContent='Ocupação: '+pct+'%';
+}
+
+function setStatus(state,msg){
+  const dot=document.getElementById('sdot');
+  dot.className='sdot'+(state==='loading'?' loading':state==='error'?' error':'');
+  document.getElementById('stext').textContent=msg;
+}
+
+function startCountdown(){
+  if(cdTimer)clearInterval(cdTimer);
+  cdSec=600;const total=600;
+  const fill=document.getElementById('cfill'),lbl=document.getElementById('clbl');
+  cdTimer=setInterval(()=>{
+    cdSec--;
+    fill.style.width=Math.max(0,Math.round(cdSec/total*100))+'%';
+    const m=Math.floor(cdSec/60),s=cdSec%60;
+    lbl.textContent=m+':'+String(s).padStart(2,'0');
+    if(cdSec<=0){clearInterval(cdTimer);load();}
+  },1000);
+}
+
+async function load(){
+  setStatus('loading','Atualizando…');
+  if(cdTimer)clearInterval(cdTimer);
+  const tMin=YEAR+'-01-01T00:00:00-03:00',tMax=YEAR+'-12-31T23:59:59-03:00';
+  const url='https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(CAL_ID)+'/events?key='+API_KEY+'&timeMin='+tMin+'&timeMax='+tMax+'&singleEvents=true&maxResults=250&fields=items(summary,start)';
+  try{
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    render(buildBookedMap(data.items));
+    const hm=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    setStatus('ok','Atualizado às '+hm);
+  }catch(e){
+    render(buildBookedMap(REAL_EVENTS));
+    setStatus('error','Usando dados locais — '+e.message);
+  }
+  startCountdown();
+}
+
+// Load initial data immediately, then fetch live
+render(buildBookedMap(REAL_EVENTS));
+load();
+</script>
+</body>
+</html>
