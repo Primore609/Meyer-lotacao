@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Produção · Primore Eventos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090d;--surface:#0d1117;--surface2:#161b22;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#e6edf3;--muted:#6e7681;--muted2:#8b949e;
+  --meyer-bg:#431407;--meyer-border:#92400e;--meyer-text:#fed7aa;
+  --gia-bg:#052e16;--gia-border:#166534;--gia-text:#86efac;
+  --villa-bg:#1c1500;--villa-border:#a16207;--villa-text:#fde68a;
+}
+html{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:13px}
+body{min-height:100vh;padding:14px;max-width:1700px;margin:0 auto}
+
+/* ── Header ── */
+.header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:12px;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:34px;height:34px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:15px}
+.brand h1{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.brand p{font-size:11px;color:var(--muted);margin-top:1px}
+.year-toggle{display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;overflow:hidden}
+.yr-btn{padding:7px 20px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;background:transparent;color:var(--muted2);border:none;cursor:pointer;transition:all .15s}
+.yr-btn.active{background:var(--border2);color:var(--text)}
+
+/* ── Annual stats ── */
+.annual-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center}
+.stat-card .num{font-size:24px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;margin-bottom:3px}
+.stat-card .lbl{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px}
+.stat-card .sub{font-size:9px;color:var(--muted);margin-top:2px}
+
+/* ── Venue counts per year ── */
+.venue-year-row{display:flex;gap:6px;margin-bottom:10px}
+.venue-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:12px}
+.venue-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.venue-name{font-size:12px;font-weight:600;flex:1}
+.venue-count{font-size:20px;font-weight:700;font-family:'DM Mono',monospace}
+.venue-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ── Day of week stats ── */
+.dow-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:10px}
+.dow-title{font-size:10px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.dow-bars{display:flex;gap:4px;align-items:flex-end;height:48px}
+.dow-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.dow-bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end}
+.dow-bar{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height .5s}
+.dow-pct{font-size:9px;font-family:'DM Mono',monospace;color:var(--muted2)}
+.dow-day{font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+
+/* ── Status ── */
+.status-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;flex-wrap:wrap}
+.sdot{width:7px;height:7px;border-radius:50%;background:#16a34a;flex-shrink:0}
+.sdot.loading{background:#b45309;animation:blink .8s infinite}
+.stext{font-size:11px;color:var(--muted2);flex:1}
+.ctrack{width:60px;height:3px;background:var(--border2);border-radius:99px;overflow:hidden}
+.cfill{height:100%;background:#16a34a;border-radius:99px;transition:width 1s linear}
+.clbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;min-width:40px}
+.btn-sm{padding:3px 9px;font-size:11px;font-family:'DM Sans',sans-serif;background:var(--surface2);color:var(--muted2);border:1px solid var(--border2);border-radius:5px;cursor:pointer}
+
+/* ── Month grid ── */
+.month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+
+.month-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px}
+.month-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:6px}
+.month-name{font-size:12px;font-weight:600;letter-spacing:.3px}
+.month-venue-counts{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.mvc{font-size:9px;font-weight:500;padding:1px 5px;border-radius:3px}
+.mvc.meyer{background:var(--meyer-bg);color:var(--meyer-text)}
+.mvc.giardino{background:var(--gia-bg);color:var(--gia-text)}
+.mvc.villa{background:var(--villa-bg);color:var(--villa-text)}
+
+/* ── Calendar ── */
+.cal table{width:100%;border-collapse:separate;border-spacing:1px}
+.cal th{font-size:8px;font-weight:500;color:var(--muted);text-align:center;padding-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+.cal td{vertical-align:top;padding:0;width:14.28%}
+.day-cell{min-height:38px;padding:1px;border-radius:3px}
+.day-num{font-size:9px;font-weight:500;color:var(--muted);font-family:'DM Mono',monospace;line-height:1;padding:1px 2px;margin-bottom:1px}
+.empty .day-num{visibility:hidden}
+.ev-tag{display:block;width:100%;border-radius:2px;padding:1px 3px;font-size:8px;font-weight:500;line-height:1.4;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
+.ev-tag.meyer{background:var(--meyer-bg);color:var(--meyer-text);border-left:2px solid var(--meyer-border)}
+.ev-tag.giardino{background:var(--gia-bg);color:var(--gia-text);border-left:2px solid var(--gia-border)}
+.ev-tag.villa{background:var(--villa-bg);color:var(--villa-text);border-left:2px solid var(--villa-border)}
+
+/* ── Legend ── */
+.legend{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-top:10px;border-top:1px solid var(--border)}
+.leg-items{display:flex;gap:16px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500}
+.leg-dot{width:14px;height:9px;border-radius:2px}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="brand-mark">🏛</div>
+    <div>
+      <h1>Painel de Produção · Primore Eventos</h1>
+      <p>Meyer · Giardino · Villa Domênica — todos os eventos</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <div class="year-toggle">
+      <button class="yr-btn active" id="btn2026" onclick="setYear(2026)">2026</button>
+      <button class="yr-btn" id="btn2027" onclick="setYear(2027)">2027</button>
+    </div>
+    <span id="updated-lbl" style="font-size:11px;color:var(--muted)">—</span>
+  </div>
+</div>
+
+<!-- Annual stats -->
+<div class="annual-stats" id="annual-stats"></div>
+
+<!-- Venue totals -->
+<div class="venue-year-row" id="venue-row"></div>
+
+<!-- Day of week chart -->
+<div class="dow-section">
+  <div class="dow-title">Distribuição por dia da semana</div>
+  <div class="dow-bars" id="dow-bars"></div>
+</div>
+
+<!-- Status -->
+<div class="status-bar">
+  <div class="sdot" id="sdot"></div>
+  <span class="stext" id="stext">Carregando…</span>
+  <div class="ctrack"><div class="cfill" id="cfill" style="width:100%"></div></div>
+  <span class="clbl" id="clbl">—</span>
+  <button class="btn-sm" onclick="load()">↺ Agora</button>
+</div>
+
+<!-- Calendar -->
+<div class="month-grid" id="month-grid"></div>
+
+<div class="legend">
+  <div class="leg-items">
+    <div class="leg"><div class="leg-dot" style="background:var(--meyer-bg);border-left:3px solid var(--meyer-border)"></div><span style="color:var(--meyer-text)">Meyer</span></div>
+    <div class="leg"><div class="leg-dot" style="background:var(--gia-bg);border-left:3px solid var(--gia-border)"></div><span style="color:var(--gia-text)">Giardino</span></div>
+    <div class="leg"><div class="leg-dot" style="background:var(--villa-bg);border-left:3px solid var(--villa-border)"></div><span style="color:var(--villa-text)">Villa Domênica</span></div>
+  </div>
+  <div style="font-size:10px;color:var(--muted)">Primore Eventos · Painel de Produção</div>
+</div>
+
+<script>
+const MONTHS=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DOW_PT=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const CAL_MEYER   ="c_8cc9ttvqasdrob2q56gg7uefjs@group.calendar.google.com";
+const CAL_GIARDINO="c_i9jh05ostkk3vmglbjlh7dtb8g@group.calendar.google.com";
+const CAL_VILLA   ="c_d750ce23315aad42af50c94d4d66292a347a4828c4376942dbea3cf6afe73af2@group.calendar.google.com";
+const API_KEY     ="AIzaSyBHu5yPq9Ha6EBo5SQsWDS4OuVPrH7IEFk";
+
+// ── Event categorizer ────────────────────────────────────────
+function categorize(title) {
+  const t = title;
+  if (/\b15\s*[Aa]nos?\b/.test(t)) return '15anos';
+  if (/[Cc]orporativo|[Ww]ay[Cc]arbon|[Rr]adicaliza|[Ff]ormatura|[Ff]esta\s+[Jj]unina/.test(t)) return 'corporativo';
+  if (/[Aa]niversari[oa]|\b\d+\s+[Aa]nos?\b|\b1\s+[Aa]no\b/.test(t)) return 'aniversario';
+  if (/[Bb]odas?|[Nn]oivado|[Cc]asamento/.test(t)) return 'casamento';
+  if (/[A-ZÀ-Ú][\wÀ-ú]+ [e&] [A-ZÀ-Ú]/.test(t)) return 'casamento';
+  return 'outros';
+}
+
+// ── Seed data ────────────────────────────────────────────────
+const SEED={
+  2026:{
+    meyer:[
+      {date:"2026-01-07",title:"Leticia e Natan"},{date:"2026-01-09",title:"15 anos Sofia Brito"},{date:"2026-01-11",title:"Amanda e Marcelo"},{date:"2026-01-16",title:"Fernanda e Bernardo"},{date:"2026-01-23",title:"Aniversário Thais"},{date:"2026-01-24",title:"15 anos Victoria"},{date:"2026-01-30",title:"15 anos Alice"},{date:"2026-01-31",title:"Laura e Tarcisio"},{date:"2026-02-06",title:"Maria Eduarda e Luiza"},{date:"2026-02-07",title:"Stephanie e Enio"},{date:"2026-02-08",title:"Jessica e Rafael"},{date:"2026-02-20",title:"15 anos Helena"},{date:"2026-02-21",title:"15 anos Aisha"},{date:"2026-02-27",title:"15 anos Giovanna"},{date:"2026-02-28",title:"Andressa e Dácio"},{date:"2026-03-06",title:"15 anos Leticia"},{date:"2026-03-07",title:"Thais e Rafael"},{date:"2026-03-08",title:"Lidiana e Paulo"},{date:"2026-03-14",title:"Mariana e Jordan"},{date:"2026-03-15",title:"Leticia & Matheus"},{date:"2026-03-18",title:"Kimbery & Wallace"},{date:"2026-03-20",title:"15 anos Julia"},{date:"2026-03-21",title:"Ana Carolina e Tharsus"},{date:"2026-03-22",title:"15 anos Maria Clara"},{date:"2026-03-25",title:"Dia P"},{date:"2026-03-27",title:"Aline e Gustavo"},{date:"2026-03-29",title:"Larissa e Charles"},{date:"2026-04-03",title:"Lizzy e Alisson"},{date:"2026-04-04",title:"Júlia & Gustavo"},{date:"2026-04-09",title:"15 anos Valentina"},{date:"2026-04-11",title:"Isabela e Gabriel"},{date:"2026-04-13",title:"Coquetel Salve Drinks"},{date:"2026-04-17",title:"50 anos Sandra"},{date:"2026-04-18",title:"Naide e Talles"},{date:"2026-04-19",title:"Alice e Leonardo"},{date:"2026-04-20",title:"Ana Julia e Lucas"},{date:"2026-04-24",title:"15 anos Leticia"},{date:"2026-04-25",title:"Flavia e Felipe"},{date:"2026-05-01",title:"Daniela e Vinicius"},{date:"2026-05-02",title:"Gabrielle e João"},{date:"2026-05-09",title:"Mariana e Frederico"},{date:"2026-05-16",title:"Bruna e Pedro"},{date:"2026-05-17",title:"Karina e Felipe"},{date:"2026-05-21",title:"Layssa & Marcos"},{date:"2026-05-22",title:"15 anos Lara"},{date:"2026-05-23",title:"Claudine e Leandro"},{date:"2026-05-24",title:"Keila & Wellington"},{date:"2026-05-26",title:"Experiência Gastronômica"},{date:"2026-05-28",title:"15 anos Liz"},{date:"2026-05-29",title:"Nataly e Eduardo"},{date:"2026-05-30",title:"Rhaissa e Pablo"},{date:"2026-05-31",title:"Corporativo Radicaliza"},{date:"2026-06-04",title:"Thayna e Bruno"},{date:"2026-06-05",title:"Carol e Gabriel"},{date:"2026-06-06",title:"Marianna e Leonardo"},{date:"2026-06-07",title:"Reforma Deck"},{date:"2026-06-13",title:"Thalita & Patrick"},{date:"2026-06-14",title:"Keiner e Sean"},{date:"2026-06-19",title:"Lais e Lais"},{date:"2026-06-20",title:"Camila e Emerson"},{date:"2026-06-21",title:"Rafaela e Gustavo"},{date:"2026-06-26",title:"15 anos Eduarda"},{date:"2026-06-27",title:"Karen & Gustavo"},{date:"2026-06-28",title:"Deborah e Rômulo"},{date:"2026-07-04",title:"Bianca & Daniel"},{date:"2026-07-05",title:"Rodrigo e Dego"},{date:"2026-07-09",title:"Camila e Gustavo"},{date:"2026-07-11",title:"Bruna e Bruno"},{date:"2026-07-12",title:"Gabriela e Luiz"},{date:"2026-07-16",title:"Luiza e Igor"},{date:"2026-07-17",title:"Julia & Carlos"},{date:"2026-07-19",title:"Fernanda & Claudio"},{date:"2026-07-24",title:"Thais e Sergio"},{date:"2026-07-25",title:"Camila e Vinicius"},{date:"2026-07-26",title:"Patricia e Bernardo"},{date:"2026-07-30",title:"Julia & Eduardo"},{date:"2026-07-31",title:"Bodas Cátia e Cláudio"},{date:"2026-08-01",title:"Kelly & Gustavo"},{date:"2026-08-08",title:"Gabriela e Rodrigo"},{date:"2026-08-12",title:"Alice e Marcos"},{date:"2026-08-13",title:"Bianca e João"},{date:"2026-08-15",title:"Camila e Guilherme"},{date:"2026-08-20",title:"15 anos Lavinia"},{date:"2026-08-22",title:"Rayssa e Igor"},{date:"2026-08-27",title:"Srishti & Luiz"},{date:"2026-08-28",title:"15 anos Manuella"},{date:"2026-08-29",title:"Tamara e Alexandre"},{date:"2026-08-30",title:"Camila & Yuri"},{date:"2026-09-03",title:"Gabriella e Thadeu"},{date:"2026-09-04",title:"Camila e Gualter"},{date:"2026-09-05",title:"Ana Carolina e Paulo"},{date:"2026-09-06",title:"Mariana e Mateus"},{date:"2026-09-11",title:"Izabella e Arthur"},{date:"2026-09-12",title:"Nayara e Lucas"},{date:"2026-09-13",title:"Gislene e Gabriel"},{date:"2026-09-17",title:"Sarah e Cristhian"},{date:"2026-09-18",title:"15 anos Maria"},{date:"2026-09-20",title:"Julia e Gustavo"},{date:"2026-09-24",title:"Isabelle e Geraldo"},{date:"2026-09-26",title:"Debora e Thiago"},{date:"2026-09-27",title:"Lidiane e Thiago"},{date:"2026-10-03",title:"Ashley e Nathan"},{date:"2026-10-04",title:"Glaucia & Petter"},{date:"2026-10-08",title:"Leticia e Tiago"},{date:"2026-10-09",title:"Juliana e Guilherme"},{date:"2026-10-10",title:"Nayara e Samuel"},{date:"2026-10-11",title:"Ana Carolina e Natanael"},{date:"2026-10-16",title:"Samara e Marco"},{date:"2026-10-17",title:"Luiza e Victor"},{date:"2026-10-18",title:"Luana & Julio"},{date:"2026-10-23",title:"Dryelly & Iuri"},{date:"2026-10-24",title:"Marina e Caio"},{date:"2026-10-25",title:"Larisse e Arthur"},{date:"2026-10-30",title:"Stefane & Daniel"},{date:"2026-10-31",title:"Laura & Raphael"},{date:"2026-11-01",title:"Yasmin e Leandro"},{date:"2026-11-07",title:"Luana e Fabio"},{date:"2026-11-19",title:"Camilla & Thales"},{date:"2026-11-20",title:"Camila e Victor"},{date:"2026-11-21",title:"Sabrina e Guilherme"},{date:"2026-11-28",title:"15 anos Laura"},{date:"2026-12-04",title:"15 Anos Lara"},{date:"2026-12-05",title:"Mariana & Jean"},{date:"2026-12-06",title:"Lorrany & Bruno"},{date:"2026-12-10",title:"Fernanda e François"},{date:"2026-12-12",title:"15 anos Julia"},{date:"2026-12-20",title:"Samara e Silvio"},
+    ],
+    giardino:[
+      {date:"2026-01-09",title:"Formatura Mariana"},{date:"2026-01-10",title:"Renata & Leandro"},{date:"2026-01-17",title:"Joana e Guilherme"},{date:"2026-01-31",title:"Formatura Dra Renata"},{date:"2026-02-07",title:"Marcone e Rodrigo"},{date:"2026-02-13",title:"Larissa e João"},{date:"2026-03-01",title:"Fernanda e Rodrigo"},{date:"2026-03-05",title:"15 anos Julia"},{date:"2026-03-06",title:"Nathalia e Gabriel"},{date:"2026-03-07",title:"90 anos Lia"},{date:"2026-03-13",title:"15 anos Isabela e Eduardo"},{date:"2026-03-20",title:"Andreia e Paulo"},{date:"2026-03-22",title:"Maria Clara e Victor"},{date:"2026-03-29",title:"Thais e Carlos"},{date:"2026-04-01",title:"15 anos Julia & Luisa"},{date:"2026-04-05",title:"1 ano Eduardo"},{date:"2026-04-11",title:"60 anos Andrea"},{date:"2026-04-19",title:"Thais e Thalles"},{date:"2026-04-24",title:"Ingra e Guilherme"},{date:"2026-04-25",title:"Juliana e Eduardo"},{date:"2026-04-30",title:"Emilia e Renan"},{date:"2026-05-01",title:"Amanda e Maikon"},{date:"2026-05-02",title:"Maria Luiza e Caio"},{date:"2026-05-15",title:"Patricia & Ricardo"},{date:"2026-05-16",title:"Leticia e Filipe"},{date:"2026-05-21",title:"Fernanda e Oscar"},{date:"2026-05-22",title:"Camila e Felipe"},{date:"2026-05-23",title:"Mariana & Eduardo"},{date:"2026-05-29",title:"Ana Brás e Bruno"},{date:"2026-06-04",title:"Ana e Guilherme"},{date:"2026-06-05",title:"Josiane e Fabricio"},{date:"2026-06-06",title:"Isabelle e Bruno"},{date:"2026-06-08",title:"Gabriela e Rafael"},{date:"2026-06-13",title:"Lucas e Bruno"},{date:"2026-06-20",title:"Thaynan e Anderson"},{date:"2026-06-22",title:"Festa Junina Primore"},{date:"2026-06-27",title:"Carolina e Henrique"},{date:"2026-06-28",title:"Amanda e Simon"},{date:"2026-07-05",title:"Taina e Giovanni"},{date:"2026-07-10",title:"Paula e Luiz"},{date:"2026-07-11",title:"Meireane e Marcos"},{date:"2026-07-12",title:"Diessica e Rodrigo"},{date:"2026-07-19",title:"Nathalia e Lucas"},{date:"2026-07-26",title:"Franciny e Rodrigo"},{date:"2026-08-01",title:"Ana e Matheus"},{date:"2026-08-07",title:"Carol e Marcos"},{date:"2026-08-08",title:"Brendha e Renato"},{date:"2026-08-13",title:"Corp. WayCarbon"},{date:"2026-08-15",title:"Fernanda e Wesley"},{date:"2026-08-16",title:"Ana Clara & Bernardo"},{date:"2026-08-22",title:"Ana e Eric"},{date:"2026-08-23",title:"Lohrayne & Vinicius"},{date:"2026-08-27",title:"Ana Carolina e Arthur"},{date:"2026-08-30",title:"Roberta e Nathalia"},{date:"2026-09-05",title:"Mariana e Rodrigo"},{date:"2026-09-06",title:"Laiza e Ronaldo"},{date:"2026-09-12",title:"Luciana e Davidson"},{date:"2026-09-13",title:"Lorrana e Matheus"},{date:"2026-09-18",title:"Ana Vasconcelos e Emerson"},{date:"2026-09-19",title:"Franciele e Bruno"},{date:"2026-09-20",title:"15 anos Camila"},{date:"2026-09-25",title:"Danielle e João Vitor"},{date:"2026-09-26",title:"60 anos Patricia"},{date:"2026-09-27",title:"Flavia e Luís"},{date:"2026-10-08",title:"15 Anos Júlia"},{date:"2026-10-09",title:"Lorena e Gleisson"},{date:"2026-10-11",title:"Rose e Wendell"},{date:"2026-10-16",title:"Agata & Joao"},{date:"2026-10-18",title:"Fernanda & Marcio"},{date:"2026-10-23",title:"Gabriela & Vitor"},{date:"2026-11-01",title:"Patrícia & Tales"},{date:"2026-11-21",title:"Luisa e Adam"},{date:"2026-11-22",title:"Alexia & Gernomane"},{date:"2026-11-28",title:"Elisangela & Lucas"},{date:"2026-12-13",title:"Nubia & Ely"},
+    ],
+    villa:[
+      {date:"2026-02-06",title:"50 anos Soraya"},{date:"2026-02-07",title:"Thayane e Luiz"},{date:"2026-02-20",title:"15 anos Isabela"},{date:"2026-02-28",title:"15 anos Ana Carolina"},{date:"2026-03-15",title:"Lorenna e Luan"},{date:"2026-05-23",title:"Aniversario Roberto"},{date:"2026-05-30",title:"Raphaela & Odilon"},{date:"2026-06-20",title:"Noivado Ana Marina & Igor"},{date:"2026-06-26",title:"Monique e Nélio"},{date:"2026-07-10",title:"Aniversario Christiano"},{date:"2026-07-18",title:"15 Anos Julia"},{date:"2026-07-25",title:"Aniversario Bruno"},{date:"2026-08-15",title:"Nathalia & Luiz"},{date:"2026-09-19",title:"15 anos Carol"},{date:"2026-11-20",title:"Camila & Leandro"},{date:"2026-11-27",title:"Aniversário do Léo"},{date:"2026-12-05",title:"Ana Laura & Marcos"},
+    ],
+  },
+  2027:{
+    meyer:[
+      {date:"2027-01-22",title:"15 anos Helena"},{date:"2027-01-23",title:"Amanda & Gabriel"},{date:"2027-01-24",title:"Sabrina & Junior"},{date:"2027-01-29",title:"Julia & Bruno"},{date:"2027-01-30",title:"15 anos Amanda"},{date:"2027-02-07",title:"Ana Luiza & Diego"},{date:"2027-02-19",title:"Karina & Marco"},{date:"2027-02-20",title:"Bodas Patricia & Genicio"},{date:"2027-02-28",title:"Ana Julia e Erick"},{date:"2027-03-07",title:"Anna & Guilherme"},{date:"2027-04-04",title:"Analara & Wesley"},{date:"2027-04-09",title:"15 anos Marina"},{date:"2027-04-10",title:"Izabella & Enrico"},{date:"2027-04-11",title:"Alexia & Victor"},{date:"2027-04-18",title:"Isabella & Rafael"},{date:"2027-04-23",title:"Pierre e Vinicius"},{date:"2027-04-29",title:"Dayana & Rodolfo"},{date:"2027-05-01",title:"Livia & Joao Pedro"},{date:"2027-05-23",title:"Maria Clara e Christian"},{date:"2027-05-27",title:"Julia e Matheus"},{date:"2027-05-28",title:"Izabela & Rodrigo"},{date:"2027-05-29",title:"Lara & Fernando"},{date:"2027-06-13",title:"Marcella & Tiago"},{date:"2027-06-19",title:"Ana & Gabriel"},{date:"2027-06-27",title:"Isadora & Gabriel"},{date:"2027-07-11",title:"Isabela & Matheus"},{date:"2027-07-17",title:"Ana Clara & Vinícius"},{date:"2027-07-18",title:"Kellem e Marcus"},{date:"2027-07-23",title:"15 anos Laís"},{date:"2027-08-07",title:"Ana Flávia & Marlon"},{date:"2027-08-13",title:"Marina & Marco"},{date:"2027-08-14",title:"Fernanda & Marco"},{date:"2027-08-15",title:"Luiza & Paulo"},{date:"2027-08-22",title:"Marcella & Joao"},{date:"2027-09-04",title:"15 anos Maria Fernanda"},{date:"2027-09-05",title:"Caroline e Leonardo"},{date:"2027-09-12",title:"Crisley e Jacques"},{date:"2027-09-13",title:"Bruna & Davi"},{date:"2027-09-19",title:"Patricia e Sérgio"},{date:"2027-09-26",title:"Renata & Paulo"},{date:"2027-10-10",title:"Leticia & Nelson"},{date:"2027-10-12",title:"Ariane e Gabriel"},{date:"2027-10-13",title:"Amanda & Johnatan"},{date:"2027-10-17",title:"Isabela e Flávio"},
+    ],
+    giardino:[
+      {date:"2027-01-29",title:"Stephany e João Lucas"},{date:"2027-01-30",title:"Isabela e Andress"},{date:"2027-02-21",title:"Tatiane e Isaias"},{date:"2027-03-21",title:"Izabela & Herberet"},{date:"2027-03-28",title:"Manuela & Wellington"},{date:"2027-04-09",title:"Victoria & William"},{date:"2027-04-11",title:"Ellen e Anderson"},{date:"2027-04-25",title:"Helen e Jhonatan"},{date:"2027-05-01",title:"Maria Clara & Bruno"},{date:"2027-05-02",title:"Tatiana e Augusto"},{date:"2027-05-08",title:"Maria Claudia & Valter"},{date:"2027-05-14",title:"Tamara & Lucas"},{date:"2027-05-21",title:"Karen e Victor"},{date:"2027-05-28",title:"Fernanda e Bruno"},{date:"2027-06-06",title:"Nayara & Leandro"},{date:"2027-06-19",title:"Henrique & Roberto"},{date:"2027-06-25",title:"Karoline & Igor"},{date:"2027-07-17",title:"Dayana & Ewerton"},{date:"2027-07-24",title:"Nanda e Isa"},{date:"2027-08-05",title:"Gabrielle & Matheus"},{date:"2027-08-13",title:"Camila e Mateus"},{date:"2027-09-04",title:"Carla & João Victor"},{date:"2027-09-19",title:"Janine & Daniel"},{date:"2027-10-10",title:"Camila & Rodrigo"},
+    ],
+    villa:[
+      {date:"2027-01-23",title:"Aniversario Lilian Rocha"},
+    ],
+  },
+};
+
+// ── State ────────────────────────────────────────────────────
+let currentYear=2026, cdTimer=null, cdSec=0;
+
+// ── Compute stats ────────────────────────────────────────────
+function computeStats(data, year) {
+  const cats={casamento:0,'15anos':0,aniversario:0,corporativo:0,outros:0};
+  const dow=[0,0,0,0,0,0,0];
+  const venue={meyer:0,giardino:0,villa:0};
+  const all=[
+    ...data.meyer.map(e=>({...e,v:'meyer'})),
+    ...data.giardino.map(e=>({...e,v:'giardino'})),
+    ...data.villa.map(e=>({...e,v:'villa'})),
+  ];
+  all.forEach(ev=>{
+    const cat=categorize(ev.title);
+    cats[cat]=(cats[cat]||0)+1;
+    const d=new Date(ev.date+'T12:00:00');
+    if(d.getFullYear()===year) dow[d.getDay()]++;
+    venue[ev.v]++;
+  });
+  return {cats, dow, venue, total:all.length};
+}
+
+// ── Render stats ─────────────────────────────────────────────
+function renderStats(data, year) {
+  const {cats, dow, venue, total} = computeStats(data, year);
+
+  // Annual stat cards
+  const statsEl = document.getElementById('annual-stats');
+  const cards = [
+    {num:total,       lbl:'Total de Eventos', color:'#60a5fa', sub:'no ano'},
+    {num:cats['15anos'],   lbl:'Debutantes (15 anos)', color:'#f472b6', sub:'bailes & festas'},
+    {num:cats.casamento,  lbl:'Casamentos', color:'#a78bfa', sub:'& noivados'},
+    {num:cats.aniversario,lbl:'Aniversários', color:'#fb923c', sub:'& comemorações'},
+    {num:cats.corporativo,lbl:'Corporativos', color:'#34d399', sub:'& formaturas'},
+    {num:cats.outros,     lbl:'Outros eventos', color:'var(--muted2)', sub:'diversos'},
+  ];
+  statsEl.innerHTML = cards.map(c=>`
+    <div class="stat-card">
+      <div class="num" style="color:${c.color}">${c.num}</div>
+      <div class="lbl">${c.lbl}</div>
+      <div class="sub">${c.sub}</div>
+    </div>`).join('');
+
+  // Venue row
+  const venueEl = document.getElementById('venue-row');
+  const vData=[
+    {key:'meyer',   name:'Meyer',          color:'var(--meyer-border)',  textColor:'var(--meyer-text)',  bg:'var(--meyer-bg)'},
+    {key:'giardino',name:'Giardino',        color:'var(--gia-border)',    textColor:'var(--gia-text)',    bg:'var(--gia-bg)'},
+    {key:'villa',   name:'Villa Domênica', color:'var(--villa-border)',  textColor:'var(--villa-text)',  bg:'var(--villa-bg)'},
+  ];
+  venueEl.innerHTML = vData.map(v=>{
+    const pct = total ? Math.round(venue[v.key]/total*100) : 0;
+    return `<div class="venue-card" style="background:${v.bg};border-color:${v.color}">
+      <div class="venue-dot" style="background:${v.color}"></div>
+      <div><div class="venue-name" style="color:${v.textColor}">${v.name}</div><div class="vendor-sub" style="font-size:10px;color:${v.textColor};opacity:.7">${pct}% dos eventos</div></div>
+      <div class="vendor-count" style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:${v.textColor}">${venue[v.key]}</div>
+    </div>`;
+  }).join('');
+
+  // Day of week bars
+  const dowEl = document.getElementById('dow-bars');
+  const maxDow = Math.max(...dow, 1);
+  dowEl.innerHTML = dow.map((n, i) => {
+    const pct = Math.round(n/total*100);
+    const h = Math.round((n/maxDow)*100);
+    const colors = ['#6366f1','#8b5cf6','#06b6d4','#10b981','#f59e0b','#f97316','#ef4444'];
+    return `<div class="dow-col">
+      <div class="dow-bar-wrap"><div class="dow-bar" style="height:${h}%;background:${colors[i]};width:100%"></div></div>
+      <div class="dow-pct">${pct}%</div>
+      <div class="dow-day">${DOW_PT[i]}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Build day map ────────────────────────────────────────────
+function buildDayMap(events, venue) {
+  const m=new Map();
+  (events||[]).forEach(ev=>{
+    const d=(ev.date||'').slice(0,10);
+    if(!d)return;
+    if(!m.has(d))m.set(d,[]);
+    m.get(d).push({venue,title:ev.title||ev.summary||''});
+  });
+  return m;
+}
+function mergeMaps(...maps){
+  const out=new Map();
+  maps.forEach(m=>m.forEach((v,k)=>{if(!out.has(k))out.set(k,[]);out.get(k).push(...v);}));
+  return out;
+}
+
+// ── Render calendar ──────────────────────────────────────────
+function renderCalendar(data, year) {
+  const meyer   =buildDayMap(data.meyer,   'meyer');
+  const giardino=buildDayMap(data.giardino,'giardino');
+  const villa   =buildDayMap(data.villa,   'villa');
+  const dayMap  =mergeMaps(meyer,giardino,villa);
+
+  const grid=document.getElementById('month-grid');
+  grid.innerHTML='';
+
+  MONTHS.forEach((name,mi)=>{
+    const firstDow=new Date(year,mi,1).getDay();
+    const daysInMonth=new Date(year,mi+1,0).getDate();
+
+    // per-venue count for this month
+    const mCount={meyer:0,giardino:0,villa:0};
+    for(let d=1;d<=daysInMonth;d++){
+      const ds=`${year}-${String(mi+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      (dayMap.get(ds)||[]).forEach(ev=>mCount[ev.venue]++);
+    }
+    const mBadges=['meyer','giardino','villa']
+      .filter(v=>mCount[v]>0)
+      .map(v=>`<span class="mvc ${v}">${v==='meyer'?'M':v==='giardino'?'G':'V'}: ${mCount[v]}</span>`)
+      .join('');
+
+    const card=document.createElement('div');
+    card.className='month-card';
+    card.innerHTML=`<div class="month-header"><span class="month-name">${name}</span><div class="month-venue-counts">${mBadges}</div></div>`;
+
+    const cal=document.createElement('div');
+    cal.className='cal';
+    const table=document.createElement('table');
+    const thead=document.createElement('thead');
+    thead.innerHTML='<tr>'+DOW_PT.map(d=>`<th>${d}</th>`).join('')+'</tr>';
+    table.appendChild(thead);
+
+    const tbody=document.createElement('tbody');
+    let day=1,col=firstDow;
+    let row=document.createElement('tr');
+
+    for(let i=0;i<firstDow;i++){
+      const td=document.createElement('td');
+      td.innerHTML='<div class="day-cell empty"><div class="day-num">·</div></div>';
+      row.appendChild(td);
+    }
+
+    while(day<=daysInMonth){
+      if(col===7){tbody.appendChild(row);row=document.createElement('tr');col=0;}
+      const ds=`${year}-${String(mi+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const evs=dayMap.get(ds)||[];
+      const td=document.createElement('td');
+      const cell=document.createElement('div');
+      cell.className='day-cell';
+      const numEl=document.createElement('div');
+      numEl.className='day-num';
+      numEl.textContent=day;
+      cell.appendChild(numEl);
+      evs.forEach(ev=>{
+        const tag=document.createElement('span');
+        tag.className=`ev-tag ${ev.venue}`;
+        tag.textContent=ev.title;
+        tag.title=ev.title;
+        cell.appendChild(tag);
+      });
+      td.appendChild(cell);
+      row.appendChild(td);
+      day++;col++;
+    }
+    while(col>0&&col<7){
+      const td=document.createElement('td');
+      td.innerHTML='<div class="day-cell empty"><div class="day-num">·</div></div>';
+      row.appendChild(td);col++;
+    }
+    if(row.children.length)tbody.appendChild(row);
+    table.appendChild(tbody);
+    cal.appendChild(table);
+    card.appendChild(cal);
+    grid.appendChild(card);
+  });
+}
+
+// ── Full render ──────────────────────────────────────────────
+function render(data, year) {
+  renderStats(data, year);
+  renderCalendar(data, year);
+}
+
+// ── Year toggle ──────────────────────────────────────────────
+function setYear(y){
+  currentYear=y;
+  document.getElementById('btn2026').classList.toggle('active',y===2026);
+  document.getElementById('btn2027').classList.toggle('active',y===2027);
+  render(SEED[y],y);
+}
+
+// ── Live fetch ───────────────────────────────────────────────
+function setStatus(state,msg){
+  document.getElementById('sdot').className='sdot'+(state==='loading'?' loading':'');
+  document.getElementById('stext').textContent=msg;
+}
+function startCountdown(){
+  if(cdTimer)clearInterval(cdTimer);
+  cdSec=600;const total=600;
+  const fill=document.getElementById('cfill'),lbl=document.getElementById('clbl');
+  cdTimer=setInterval(()=>{
+    cdSec--;
+    fill.style.width=Math.max(0,Math.round(cdSec/total*100))+'%';
+    const m=Math.floor(cdSec/60),s=cdSec%60;
+    lbl.textContent=m+':'+String(s).padStart(2,'0');
+    if(cdSec<=0){clearInterval(cdTimer);load();}
+  },1000);
+}
+async function fetchCal(calId,year){
+  const tMin=`${year}-01-01T00:00:00-03:00`,tMax=`${year}-12-31T23:59:59-03:00`;
+  const url=`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?key=${API_KEY}&timeMin=${tMin}&timeMax=${tMax}&singleEvents=true&maxResults=250&fields=items(summary,start)`;
+  const res=await fetch(url);
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const data=await res.json();
+  return(data.items||[]).map(ev=>({date:(ev.start?.date||ev.start?.dateTime||'').slice(0,10),title:ev.summary||''}));
+}
+async function load(){
+  setStatus('loading','Atualizando…');
+  if(cdTimer)clearInterval(cdTimer);
+  try{
+    const[m26,g26,v26,m27,g27,v27]=await Promise.all([
+      fetchCal(CAL_MEYER,2026),fetchCal(CAL_GIARDINO,2026),fetchCal(CAL_VILLA,2026),
+      fetchCal(CAL_MEYER,2027),fetchCal(CAL_GIARDINO,2027),fetchCal(CAL_VILLA,2027),
+    ]);
+    SEED[2026]={meyer:m26,giardino:g26,villa:v26};
+    SEED[2027]={meyer:m27,giardino:g27,villa:v27};
+    render(SEED[currentYear],currentYear);
+    const hm=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    setStatus('ok','Atualizado às '+hm);
+    document.getElementById('updated-lbl').textContent='Atualizado: '+hm;
+  }catch(e){
+    render(SEED[currentYear],currentYear);
+    setStatus('error','Dados locais — '+e.message);
+  }
+  startCountdown();
+}
+
+render(SEED[2026],2026);
+load();
+</script>
+</body>
+</html>
