@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parcial de Vendas · Primore</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090d;--sf:#0d1117;--sf2:#161b22;
+  --bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.16);
+  --tx:#e6edf3;--mt:#6e7681;--mt2:#8b949e;
+  --green:#16a34a;--green-dim:#052e16;
+  --blue:#2563eb;--blue-dim:#0c1a3a;
+  --gold:#ca8a04;--gold-dim:#1c1a00;
+  --red:#dc2626;--red-dim:#450a0a;
+  --meyer:#16a34a;--gia:#2563eb;--villa:#ca8a04;
+}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif}
+
+/* ── Layout ── */
+.page{display:flex;flex-direction:column;height:1080px;padding:20px 28px 18px}
+
+/* ── Header ── */
+.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--bd);margin-bottom:16px;flex-shrink:0}
+.title-block h1{font-size:32px;font-weight:700;letter-spacing:-.5px;color:var(--tx)}
+.title-block .cycle{font-size:14px;color:var(--mt2);margin-top:3px;display:flex;align-items:center;gap:10px}
+.cycle-badge{background:var(--sf2);border:1px solid var(--bd2);border-radius:6px;padding:3px 10px;font-size:13px;font-weight:600;color:var(--tx);font-family:'DM Mono',monospace}
+.date-block{text-align:right}
+.date-block .date{font-size:28px;font-weight:700;font-family:'DM Mono',monospace;color:var(--tx);letter-spacing:-.5px}
+.date-block .weekday{font-size:13px;color:var(--mt2);margin-top:2px}
+
+/* ── Status ── */
+.status-line{font-size:12px;color:var(--mt);display:flex;align-items:center;gap:6px;margin-top:4px}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sdot.ld{background:#b45309;animation:blink .8s infinite}
+.sdot.err{background:var(--red)}
+
+/* ── KPI bar ── */
+.kpi-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;flex-shrink:0}
+.kpi{border-radius:12px;padding:16px 20px;border:1px solid}
+.kpi .kn{font-size:42px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;margin-bottom:4px}
+.kpi .kl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.kpi .ks{font-size:11px;margin-top:3px;opacity:.7}
+.kpi-total{background:rgba(22,163,74,.1);border-color:var(--green)}
+.kpi-meta{background:var(--sf);border-color:var(--bd2)}
+.kpi-falta{background:rgba(220,38,38,.1);border-color:var(--red)}
+.kpi-prog{margin-top:8px;height:6px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.kpi-prog-fill{height:100%;border-radius:99px;background:var(--green);transition:width .6s}
+
+/* ── Main grid ── */
+.main-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;flex:1;min-height:0}
+.panel{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;min-height:0}
+.panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mt2);margin-bottom:10px;flex-shrink:0}
+
+/* ── Tables ── */
+.tbl{width:100%;border-collapse:collapse;flex:1}
+.tbl th{font-size:10px;font-weight:600;color:var(--mt);text-align:left;padding:0 6px 6px;border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.4px}
+.tbl th:last-child,.tbl td:last-child{text-align:right}
+.tbl td{padding:7px 6px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl .name{font-weight:600;color:var(--tx)}
+.tbl .qty{font-size:12px;color:var(--mt2);background:var(--sf2);padding:2px 7px;border-radius:99px;font-family:'DM Mono',monospace}
+.tbl .val{font-weight:700;font-family:'DM Mono',monospace;color:var(--tx);font-size:14px}
+.tbl .empty{color:var(--mt);font-size:12px;padding:16px 0;text-align:center}
+
+/* ── Venue dot ── */
+.vdot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* ── Loading state ── */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:50}
+.loading-overlay.hidden{display:none}
+.spin{width:32px;height:32px;border:3px solid var(--bd2);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite}
+
+/* ── Countdown ── */
+.countdown{position:fixed;bottom:12px;right:20px;font-size:11px;color:var(--mt);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
+.ct{width:60px;height:3px;background:var(--bd2);border-radius:99px;overflow:hidden}
+.cf{height:100%;background:var(--green);border-radius:99px;transition:width 1s linear}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spin"></div>
+  <div style="font-size:14px;color:var(--mt2)">Carregando dados da planilha…</div>
+</div>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="title-block">
+      <h1>Parcial de Vendas</h1>
+      <div class="cycle">
+        <span id="cycle-badge" class="cycle-badge">—</span>
+        <div class="status-line">
+          <div class="sdot" id="sdot"></div>
+          <span id="stxt">Carregando…</span>
+        </div>
+      </div>
+    </div>
+    <div class="date-block">
+      <div class="date" id="date-display">—</div>
+      <div class="weekday" id="weekday-display">—</div>
+    </div>
+  </div>
+
+  <!-- KPI bar -->
+  <div class="kpi-bar">
+    <div class="kpi kpi-total">
+      <div class="kn" id="kpi-total" style="color:var(--green)">R$ —</div>
+      <div class="kl" style="color:var(--green)">Total Vendido</div>
+      <div class="ks" id="kpi-contratos">— contratos no ciclo</div>
+      <div class="kpi-prog"><div class="kpi-prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="kpi kpi-meta">
+      <div class="kn" style="color:var(--mt2)">R$ 1.250.000</div>
+      <div class="kl" style="color:var(--mt2)">Meta do Ciclo</div>
+      <div class="ks" id="kpi-pct">—% atingido</div>
+    </div>
+    <div class="kpi kpi-falta">
+      <div class="kn" id="kpi-falta" style="color:var(--red)">R$ —</div>
+      <div class="kl" style="color:var(--red)">Falta para a Meta</div>
+      <div class="ks" id="kpi-falta-sub">—</div>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="main-grid">
+
+    <!-- SDR -->
+    <div class="panel">
+      <div class="panel-title">Por SDR</div>
+      <table class="tbl">
+        <thead><tr>
+          <th>SDR</th>
+          <th>Contratos</th>
+          <th>Total Vendido</th>
+        </tr></thead>
+        <tbody id="tbl-sdr"></tbody>
+      </table>
+    </div>
+
+    <!-- Consultor -->
+    <div class="panel">
+      <div class="panel-title">Por Consultor</div>
+      <table class="tbl">
+        <thead><tr>
+          <th>Consultor</th>
+          <th>Contratos</th>
+          <th>Total Vendido</th>
+        </tr></thead>
+        <tbody id="tbl-consultor"></tbody>
+      </table>
+    </div>
+
+    <!-- Espaço -->
+    <div class="panel">
+      <div class="panel-title">Por Espaço</div>
+      <table class="tbl">
+        <thead><tr>
+          <th>Espaço</th>
+          <th>Contratos</th>
+          <th>Total Vendido</th>
+        </tr></thead>
+        <tbody id="tbl-espaco"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Countdown -->
+<div class="countdown">
+  <div class="ct"><div class="cf" id="cf" style="width:100%"></div></div>
+  <span id="ct-lbl">—</span>
+</div>
+
+<script>
+const SHEET_ID = '13co1MPFmscJBF3f9sr1vYGO2Kpv4CkrE';
+const API_KEY  = 'AIzaSyBHu5yPq9Ha6EBo5SQsWDS4OuVPrH7IEFk';
+const META     = 1250000;
+const REFRESH  = 300; // segundos
+
+const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAYS_PT   = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira',
+                   'Quinta-feira','Sexta-feira','Sábado'];
+
+// Venue colors
+const VENUE_COLOR = {
+  'meyer':'#16a34a','giardino':'#2563eb','villa domenica':'#ca8a04',
+  'villa domênica':'#ca8a04','villa':'#ca8a04'
+};
+function venueColor(name){
+  const k=(name||'').toLowerCase().trim();
+  return VENUE_COLOR[k]||'#8b949e';
+}
+
+// Currency formatting
+function fmtBRL(val){
+  return 'R$ '+val.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+function parseVal(str){
+  if(!str)return 0;
+  const s=str.replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.');
+  // handle "33,485.00" US format from Sheets
+  const us=str.replace(/[R$\s]/g,'').replace(/,/g,'');
+  return parseFloat(us)||parseFloat(s)||0;
+}
+
+// Current cycle name
+function cycleName(){
+  const today=new Date();
+  const day=today.getDate(), mo=today.getMonth();
+  const s=day>=20?mo:(mo-1+12)%12;
+  const e=(s+1)%12;
+  return `Ciclo ${MONTHS_PT[s]} e ${MONTHS_PT[e]}`;
+}
+
+function cycleRange(){
+  const today=new Date();
+  const day=today.getDate(), mo=today.getMonth(), yr=today.getFullYear();
+  let sm,sy,em,ey;
+  if(day>=20){sm=mo;sy=yr;em=(mo+1)%12;ey=mo===11?yr+1:yr;}
+  else{sm=(mo-1+12)%12;sy=mo===0?yr-1:yr;em=mo;ey=yr;}
+  return `20/${String(sm+1).padStart(2,'0')} a 19/${String(em+1).padStart(2,'0')}`;
+}
+
+// Column mapper
+function colMap(headers){
+  const map={};
+  headers.forEach((h,i)=>{
+    if(!h)return;
+    const n=h.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+    if(n==='evento'||n.startsWith('evento'))map.evento=i;
+    if(n.includes('espaco')||n.includes('espaco'))map.espaco=i;
+    if(n.includes('data contrato')||n==='data contrato')map.dataContrato=i;
+    if(n==='sdr')map.sdr=i;
+    if(n.startsWith('consultor'))map.consultor=i;
+    if(n.includes('valor de contrato')||n.includes('valor'))map.valor=i;
+    if(n.includes('campanha'))map.campanha=i;
+    if(n.includes('data do evento'))map.dataEvento=i;
+    if(n.includes('dia da semana'))map.diaSemana=i;
+  });
+  return map;
+}
+
+function isCancelled(row, cm){
+  const camp=(row[cm.campanha]||'').toUpperCase();
+  const cons=(row[cm.consultor]||'').toUpperCase();
+  const sdr=(row[cm.sdr]||'').toUpperCase();
+  return camp.includes('CANCEL')||cons.includes('CANCEL')||sdr.includes('CANCEL');
+}
+function isDataRow(row, cm){
+  const ev=row[cm.evento]||'';
+  const val=row[cm.valor]||'';
+  if(!ev||ev.toLowerCase().startsWith('evento')||ev.toLowerCase().startsWith('metas')||ev.toLowerCase().startsWith('faltam'))return false;
+  if(val.includes('0.00')&&!ev.trim())return false;
+  return true;
+}
+
+// Aggregate
+function aggregate(rows, cm){
+  const sdrMap={}, consMap={}, espMap={};
+  let total=0,count=0;
+
+  rows.forEach(row=>{
+    if(!isDataRow(row,cm))return;
+    if(isCancelled(row,cm))return;
+    const val=parseVal(row[cm.valor]);
+    if(val===0)return; // skip zero-value (sorteio, sem valor)
+
+    const sdr=(row[cm.sdr]||'').trim();
+    const cons=(row[cm.consultor]||'').trim();
+    const esp=(row[cm.espaco]||'').trim();
+
+    total+=val; count++;
+
+    if(sdr){
+      if(!sdrMap[sdr])sdrMap[sdr]={total:0,count:0};
+      sdrMap[sdr].total+=val; sdrMap[sdr].count++;
+    }
+    if(cons){
+      if(!consMap[cons])consMap[cons]={total:0,count:0};
+      consMap[cons].total+=val; consMap[cons].count++;
+    }
+    if(esp){
+      if(!espMap[esp])espMap[esp]={total:0,count:0};
+      espMap[esp].total+=val; espMap[esp].count++;
+    }
+  });
+
+  return{sdrMap,consMap,espMap,total,count};
+}
+
+// Render table
+function renderTable(tbodyId, dataMap, colorFn){
+  const tbody=document.getElementById(tbodyId);
+  const entries=Object.entries(dataMap).sort((a,b)=>b[1].total-a[1].total);
+  if(!entries.length){
+    tbody.innerHTML=`<tr><td colspan="3" class="empty">Nenhum dado no ciclo</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=entries.map(([name,d])=>{
+    const color=colorFn?colorFn(name):'var(--mt2)';
+    const dot=colorFn?`<span class="vdot" style="background:${color}"></span>`:'';
+    return`<tr>
+      <td class="name">${dot}${name}</td>
+      <td><span class="qty">${d.count}</span></td>
+      <td class="val">${fmtBRL(d.total)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Update date display
+function updateDate(){
+  const now=new Date();
+  const d=String(now.getDate()).padStart(2,'0');
+  const m=String(now.getMonth()+1).padStart(2,'0');
+  const y=now.getFullYear();
+  document.getElementById('date-display').textContent=`${d}/${m}/${y}`;
+  document.getElementById('weekday-display').textContent=DAYS_PT[now.getDay()];
+}
+
+// Main load
+async function load(){
+  const sdot=document.getElementById('sdot');
+  const stxt=document.getElementById('stxt');
+  sdot.className='sdot ld';
+  stxt.textContent='Buscando dados…';
+
+  try{
+    // 1. Get sheet names
+    const metaUrl=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?key=${API_KEY}&fields=sheets.properties.title`;
+    const metaRes=await fetch(metaUrl);
+    if(!metaRes.ok){
+      const err=await metaRes.json();
+      throw new Error(err?.error?.message||'Erro '+metaRes.status);
+    }
+    const meta=await metaRes.json();
+    const sheets=(meta.sheets||[]).map(s=>s.properties.title);
+
+    // 2. Find current cycle
+    const cn=cycleName();
+    const sheet=sheets.find(s=>s===cn)||sheets.find(s=>s.toLowerCase()===cn.toLowerCase())||sheets.find(s=>s.toLowerCase().includes(cn.split(' e ')[0].toLowerCase())&&s.toLowerCase().includes(cn.split(' e ')[1].toLowerCase()));
+    if(!sheet)throw new Error(`Aba não encontrada: ${cn}. Abas disponíveis: ${sheets.join(', ')}`);
+
+    document.getElementById('cycle-badge').textContent=`${sheet} · ${cycleRange()}`;
+
+    // 3. Fetch rows
+    const dataUrl=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheet)}!A:O?key=${API_KEY}`;
+    const dataRes=await fetch(dataUrl);
+    if(!dataRes.ok)throw new Error('Erro ao buscar dados: '+dataRes.status);
+    const data=await dataRes.json();
+    const rows=data.values||[];
+    if(!rows.length)throw new Error('Planilha vazia');
+
+    // 4. Find header row (first row with "Evento" or similar)
+    let headerIdx=0;
+    for(let i=0;i<Math.min(5,rows.length);i++){
+      if(rows[i].some(c=>(c||'').toLowerCase().includes('evento'))){headerIdx=i;break;}
+    }
+    const cm=colMap(rows[headerIdx]);
+    const dataRows=rows.slice(headerIdx+1);
+
+    // 5. Aggregate
+    const{sdrMap,consMap,espMap,total,count}=aggregate(dataRows,cm);
+
+    // 6. Render KPIs
+    const falta=Math.max(0,META-total);
+    const pct=Math.min(100,Math.round(total/META*100));
+    document.getElementById('kpi-total').textContent=fmtBRL(total);
+    document.getElementById('kpi-contratos').textContent=`${count} contrato${count!==1?'s':''} no ciclo`;
+    document.getElementById('kpi-pct').textContent=`${pct}% atingido`;
+    document.getElementById('kpi-falta').textContent=fmtBRL(falta);
+    document.getElementById('kpi-falta-sub').textContent=falta<=0?'✓ Meta atingida!':'Restam '+fmtBRL(falta)+' para a meta';
+    document.getElementById('prog-fill').style.width=pct+'%';
+    document.getElementById('prog-fill').style.background=pct>=100?'var(--gold)':pct>=70?'var(--green)':'#2563eb';
+
+    // 7. Render tables
+    renderTable('tbl-sdr',sdrMap,null);
+    renderTable('tbl-consultor',consMap,null);
+    renderTable('tbl-espaco',espMap,n=>venueColor(n));
+
+    sdot.className='sdot';
+    const hm=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    stxt.textContent=`Atualizado às ${hm} · ${count} contratos encontrados`;
+    document.getElementById('loading').classList.add('hidden');
+
+  }catch(e){
+    sdot.className='sdot err';
+    stxt.textContent='Erro: '+e.message;
+    document.getElementById('loading').classList.add('hidden');
+    console.error(e);
+  }
+}
+
+// Countdown
+let sec=0,cdT=null;
+function startCD(){
+  if(cdT)clearInterval(cdT);
+  sec=REFRESH;
+  const cf=document.getElementById('cf'),cl=document.getElementById('ct-lbl');
+  cdT=setInterval(()=>{
+    sec--;
+    cf.style.width=Math.max(0,Math.round(sec/REFRESH*100))+'%';
+    const m=Math.floor(sec/60),s=sec%60;
+    cl.textContent=m+':'+String(s).padStart(2,'0');
+    if(sec<=0){clearInterval(cdT);load().then(startCD);}
+  },1000);
+}
+
+// Clock tick
+setInterval(updateDate,1000);
+
+// Init
+updateDate();
+load().then(startCD);
+</script>
+</body>
+</html>
