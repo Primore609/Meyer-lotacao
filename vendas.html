@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Comercial · Primore</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090d;--sf:#0d1117;--sf2:#161b22;
+  --bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.16);
+  --tx:#e6edf3;--mt:#6e7681;--mt2:#8b949e;
+  --green:#16a34a;--red:#dc2626;--gold:#ca8a04;--blue:#2563eb;--amber:#d97706;
+  --lucas:#22c55e;--marcelo:#eab308;--filipe:#7dd3fc;
+}
+html,body{margin:0;padding:0;overflow:hidden;background:var(--bg)}
+body{width:1920px;height:1080px;color:var(--tx);font-family:'DM Sans',sans-serif;transform-origin:top left;position:absolute;top:0;left:0;}
+
+/* ── Slide engine ── */
+.prog{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--lucas),var(--marcelo),var(--filipe));border-radius:0 99px 99px 0;transition:width linear;z-index:100}
+.dots{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100}
+.dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.18)}
+.dot.on{background:rgba(255,255,255,.85)}
+.slides{position:relative;width:1920px;height:1080px}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:18px 28px 22px;gap:11px;opacity:0;transition:opacity .5s}
+.slide.on{display:flex;opacity:1}
+
+/* ── Shared ── */
+.badge{background:var(--sf2);border:1px solid var(--bd2);border-radius:6px;padding:3px 11px;font-size:12px;font-weight:600;color:var(--tx);font-family:'DM Mono',monospace}
+.badge.g{background:rgba(22,163,74,.15);border-color:var(--green);color:#86efac}
+.badge.a{background:rgba(217,119,6,.15);border-color:var(--amber);color:#fcd34d}
+.badge.r{background:rgba(220,38,38,.15);border-color:var(--red);color:#fca5a5}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sdot.ld{background:var(--amber);animation:blink .8s infinite}
+.sdot.er{background:var(--red)}
+.err-box{background:rgba(220,38,38,.1);border:1px solid var(--red);border-radius:8px;padding:8px 14px;font-size:12px;color:#fca5a5;display:none;flex-shrink:0}
+
+/* ══ SLIDE 1 — Parcial de Vendas ══ */
+.s1-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.s1-header h1{font-size:38px;font-weight:700;letter-spacing:-.5px}
+.s1-meta{display:flex;align-items:center;gap:9px;margin-top:5px}
+.s1-right{text-align:right;flex-shrink:0}
+.s1-right .date{font-size:28px;font-weight:700;font-family:'DM Mono',monospace}
+.s1-right .wd{font-size:12px;color:var(--mt2);margin-top:2px}
+.s1-right .cdays{font-size:11px;color:var(--mt2);font-family:'DM Mono',monospace;margin-top:2px}
+
+.kpi-strip{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px;flex:2;min-height:0}
+.kpi{border-radius:12px;padding:22px 28px;border:1px solid}
+.kpi .kn{font-size:58px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;margin-bottom:4px}
+.kpi .kl{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}
+.kpi .ks{font-size:13px;margin-top:3px;opacity:.75}
+.kpi-prog{margin-top:8px;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.kpi-pf{height:100%;border-radius:99px;transition:width .8s}
+
+
+.cons-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;min-height:0;overflow:hidden}
+.cons-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.cons-name{font-size:20px;font-weight:700}
+.cnivel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:2px 8px;border-radius:99px}
+.nsr{background:rgba(202,138,4,.15);color:#fde047;border:1px solid var(--gold)}
+.npl{background:rgba(37,99,235,.15);color:#93c5fd;border:1px solid var(--blue)}
+.njr{background:rgba(22,163,74,.15);color:#86efac;border:1px solid var(--green)}
+.cons-nums{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:7px}
+.cons-atual{font-size:30px;font-weight:700;font-family:'DM Mono',monospace}
+.cons-meta-lbl{font-size:10px;color:var(--mt2);text-align:right}
+.cons-meta-val{font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:var(--mt2)}
+.bat-wrap{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.bat-body{flex:1;height:20px;background:var(--sf2);border-radius:4px;overflow:hidden;border:1px solid var(--bd2);position:relative}
+.bat-fill{height:100%;border-radius:3px;transition:width .8s;display:flex;align-items:center;justify-content:flex-end;padding-right:5px}
+.bat-fill::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 16px,rgba(0,0,0,.12) 16px,rgba(0,0,0,.12) 18px)}
+.bat-pct{font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:rgba(255,255,255,.9);position:relative;z-index:1}
+.bat-tip{width:5px;height:10px;border-radius:0 2px 2px 0;background:var(--bd2)}
+.cons-status{font-size:10px;font-weight:600}
+
+.tables-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;height:195px;flex-shrink:0}
+.panel{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:13px 15px;display:flex;flex-direction:column;overflow:hidden}
+.ptitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mt2);margin-bottom:10px;flex-shrink:0}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;font-weight:600;color:var(--mt);text-align:left;padding:0 7px 7px;border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.4px}
+th:last-child,td:last-child{text-align:right}
+td{padding:8px 7px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04)}
+tr:last-child td{border-bottom:none}
+.tnm{font-weight:600}
+.qty{font-size:11px;color:var(--mt2);background:var(--sf2);padding:2px 7px;border-radius:99px;font-family:'DM Mono',monospace}
+.tval{font-weight:700;font-family:'DM Mono',monospace;font-size:14px}
+.empty-r{color:var(--mt);font-size:13px;text-align:center;padding:18px 0}
+.vdot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* ══ SLIDE 2 — Visitas Agendadas ══ */
+.s2-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.s2-header h1{font-size:32px;font-weight:700;letter-spacing:-.5px}
+.s2-meta{display:flex;align-items:center;gap:9px;margin-top:5px;flex-wrap:wrap}
+.cs-pill{display:flex;align-items:center;gap:6px;background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;padding:4px 10px}
+.cs-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.cs-name{font-size:12px;font-weight:600}
+.cs-count{font-size:17px;font-weight:700;font-family:'DM Mono',monospace;margin-left:3px}
+
+/* ── Calendar grid ── */
+.cal-outer{flex:1;min-height:0;display:flex;flex-direction:column;gap:0}
+.cal-grid{
+  display:grid;
+  grid-template-columns:58px repeat(7,1fr);
+  gap:3px;
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  align-content:start;
+}
+.cal-grid::-webkit-scrollbar{width:4px}
+.cal-grid::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px}
+
+.cal-corner{/* empty top-left cell */}
+.cal-dayhdr{
+  background:var(--sf);border:1px solid var(--bd);border-radius:7px;
+  padding:6px 8px;text-align:center;
+  position:sticky;top:0;z-index:5;
+}
+.cal-dayhdr .dname{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt2)}
+.cal-dayhdr .ddate{font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:var(--tx);line-height:1.2}
+.cal-dayhdr .dcnt{font-size:10px;color:var(--mt2);margin-top:1px}
+.cal-dayhdr.today{border-color:var(--blue)}
+.cal-dayhdr.today .dname{color:#93c5fd}
+.cal-dayhdr.today .ddate{color:#93c5fd}
+
+.cal-time{
+  display:flex;align-items:flex-start;justify-content:flex-end;
+  padding:6px 6px 0 0;
+  font-size:11px;font-weight:600;font-family:'DM Mono',monospace;color:var(--mt2);
+}
+.cal-cell{
+  background:var(--sf);border:1px solid var(--bd);border-radius:5px;
+  padding:3px;min-height:60px;
+  display:flex;gap:2px;align-items:flex-start;
+}
+.cal-cell.today{background:rgba(37,99,235,.04);border-color:rgba(37,99,235,.2)}
+.cal-cell.filled{background:var(--sf2)}
+
+.ev-chip{
+  border-radius:4px;padding:4px 6px;border-left:3px solid;
+  flex:1;min-width:0;
+}
+.ev-chip .et{font-size:9px;font-family:'DM Mono',monospace;margin-bottom:2px;opacity:.8}
+.ev-chip .en{font-size:11px;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ev-chip .ec{font-size:9px;font-weight:600;margin-top:2px;opacity:.8}
+
+/* ── Legend ── */
+.legend-bar{display:flex;gap:18px;align-items:center;padding-top:10px;border-top:1px solid var(--bd);flex-shrink:0}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500}
+.leg-dot{width:14px;height:10px;border-radius:2px}
+
+/* ── Countdown ── */
+.countdown{position:fixed;bottom:12px;right:20px;display:flex;align-items:center;gap:7px;font-size:11px;color:var(--mt);font-family:'DM Mono',monospace}
+.ct{width:55px;height:3px;background:var(--bd2);border-radius:99px;overflow:hidden}
+.cf{height:100%;background:var(--green);border-radius:99px;transition:width 1s linear}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+<div class="prog" id="prog" style="width:0%"></div>
+<div class="dots" id="dots"></div>
+<div style="position:fixed;bottom:10px;right:20px;display:flex;align-items:center;gap:6px;z-index:100">
+  <button onclick="prevSlide()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#e6edf3;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">‹</button>
+  <button onclick="togglePause()" id="pause-btn" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#e6edf3;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">⏸</button>
+  <button onclick="nextSlide()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#e6edf3;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">›</button>
+</div>
+
+<div class="slides">
+
+<!-- ══ SLIDE 1: Parcial de Vendas ══════════════════════════ -->
+<div class="slide on" id="slide-0">
+  <div class="s1-header">
+    <div>
+      <h1>Parcial de Vendas</h1>
+      <div class="s1-meta">
+        <span class="badge" id="cycle-badge">—</span>
+        <span class="badge" id="days-badge">—</span>
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--mt)">
+          <div class="sdot" id="sdot"></div><span id="stxt">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="s1-right">
+      <div class="date" id="date-el">—</div>
+      <div class="wd" id="wd-el">—</div>
+      <div class="cdays" id="cdays-el">—</div>
+    </div>
+  </div>
+
+  <div class="err-box" id="err-box"></div>
+
+  <div class="kpi-strip" style="flex:2;min-height:0">
+    <div class="kpi" style="background:rgba(22,163,74,.08);border-color:var(--green)">
+      <div class="kn" id="kpi-total" style="color:var(--green)">R$ —</div>
+      <div class="kl" style="color:var(--green)">Total Vendido no Ciclo</div>
+      <div class="ks" id="kpi-qtd">— contratos</div>
+      <div class="kpi-prog"><div class="kpi-pf" id="kpi-pf" style="width:0%"></div></div>
+    </div>
+    <div class="kpi" style="background:var(--sf);border-color:var(--bd2)">
+      <div class="kn" style="color:var(--mt2)">R$ 1.250.000</div>
+      <div class="kl" style="color:var(--mt2)">Meta do Ciclo</div>
+      <div class="ks" id="kpi-pct">—% atingido</div>
+    </div>
+    <div class="kpi" style="background:rgba(220,38,38,.08);border-color:var(--red)">
+      <div class="kn" id="kpi-falta" style="color:var(--red)">R$ —</div>
+      <div class="kl" style="color:var(--red)">Falta para a Meta</div>
+      <div class="ks" id="kpi-falta-sub">—</div>
+    </div>
+  </div>
+
+  <div id="cons-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:3;min-height:0"></div>
+
+  <div class="tables-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;height:190px;flex-shrink:0">
+    <div class="panel">
+      <div class="ptitle">Por SDR</div>
+      <div id="pie-sdr" style="height:100%;width:100%;min-height:0"></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Por Espaço</div>
+      <div id="pie-esp" style="height:100%;width:100%;min-height:0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2: Visitas Agendadas ══════════════════════════ -->
+<div class="slide" id="slide-1">
+  <div class="s2-header">
+    <div>
+      <h1>Visitas Agendadas</h1>
+      <div class="s2-meta">
+        <span class="badge" id="week-badge">—</span>
+        <span class="badge g" id="total-visits">— visitas</span>
+        <div id="cons-summary" style="display:flex;gap:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cal-outer">
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <div class="legend-bar">
+    <span style="font-size:11px;font-weight:700;color:var(--mt2);text-transform:uppercase;letter-spacing:.6px">Tipo:</span>
+    <div class="leg"><div style="width:10px;height:10px;border-radius:50%;background:#22c55e;flex-shrink:0"></div><span style="color:#22c55e;font-weight:600">Visita</span></div>
+    <div class="leg"><div style="width:10px;height:10px;border-radius:50%;background:#ef4444;flex-shrink:0"></div><span style="color:#ef4444;font-weight:600">Passagem de Bastão</span></div>
+    <div style="width:1px;height:16px;background:var(--bd2);margin:0 4px"></div>
+    <span style="font-size:11px;font-weight:700;color:var(--mt2);text-transform:uppercase;letter-spacing:.6px">Consultor:</span>
+    <div class="leg"><div class="leg-dot" style="background:rgba(234,179,8,.2);border-left:3px solid var(--marcelo)"></div><span style="color:var(--marcelo)">Marcelo Wagmann</span></div>
+    <div class="leg"><div class="leg-dot" style="background:rgba(34,197,94,.2);border-left:3px solid var(--lucas)"></div><span style="color:var(--lucas)">Lucas Vieira</span></div>
+    <div class="leg"><div class="leg-dot" style="background:rgba(125,211,252,.2);border-left:3px solid var(--filipe)"></div><span style="color:var(--filipe)">Filipe Pinheiro</span></div>
+  </div>
+</div>
+
+
+<!-- ══ SLIDE 3: Histórico de Faturamento ══════════════════ -->
+<div class="slide" id="slide-2">
+  <div class="s1-header">
+    <div>
+      <h1>Histórico de Faturamento</h1>
+      <div class="s1-meta">
+        <span class="badge" id="fat-upd">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Year KPI cards -->
+  <div id="fat-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex-shrink:0"></div>
+
+  <!-- Chart -->
+  <div style="flex:1;min-height:0;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:8px">
+    <div id="fat-chart" style="flex:1;min-height:0"></div>
+    <!-- Legend -->
+    <div style="display:flex;gap:20px;justify-content:center;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600">
+        <div style="width:28px;height:3px;background:#6366f1;border-radius:99px"></div>
+        <span style="color:#6366f1">2024</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600">
+        <div style="width:28px;height:3px;background:#a855f7;border-radius:99px"></div>
+        <span style="color:#a855f7">2025</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600">
+        <div style="width:28px;height:3px;background:#f59e0b;border-radius:99px;opacity:.9;border-top:2px dashed #f59e0b"></div>
+        <span style="color:#f59e0b">2026 (parcial)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ SLIDE 4: Acompanhamento Quadrimestral ══════════════ -->
+<div class="slide" id="slide-4">
+  <div style="flex-shrink:0;padding-bottom:10px;border-bottom:1px solid var(--bd);margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+      <div>
+        <h1 style="font-size:28px;font-weight:700;letter-spacing:-.5px">Acompanhamento Quadrimestral</h1>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap">
+          <span class="badge" id="quad-period">—</span>
+          <span class="badge g" id="quad-mes">—</span>
+        </div>
+      </div>
+      <!-- Diretrizes resumidas -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:7px 14px;font-size:11px">
+          <div style="font-weight:700;color:#86efac;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">↑ Para SUBIR de nível</div>
+          <div style="color:var(--mt2)">Média top 3 meses <strong style="color:#86efac">≥ Meta</strong> do nível atual</div>
+          <div style="color:var(--mt);margin-top:3px;font-size:10px">Júnior → Pleno: R$450k · Pleno → Sênior: R$600k</div>
+        </div>
+        <div style="background:rgba(147,197,253,.08);border:1px solid rgba(147,197,253,.25);border-radius:8px;padding:7px 14px;font-size:11px">
+          <div style="font-weight:700;color:#93c5fd;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">↔ Para MANTER o nível</div>
+          <div style="color:var(--mt2)">Média top 3 meses <strong style="color:#93c5fd">≥ Mínimo</strong> do nível</div>
+          <div style="color:var(--mt);margin-top:3px;font-size:10px">Júnior: R$250k · Pleno: R$450k · Sênior: R$600k</div>
+        </div>
+        <div style="background:rgba(252,165,165,.08);border:1px solid rgba(252,165,165,.25);border-radius:8px;padding:7px 14px;font-size:11px">
+          <div style="font-weight:700;color:#fca5a5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">↓ Se não manter</div>
+          <div style="color:var(--mt2)">Retorna ao nível <strong style="color:#fca5a5">anterior</strong> no próximo período</div>
+          <div style="color:var(--mt);margin-top:3px;font-size:10px">Avaliação a cada 4 meses por ciclo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="quad-grid" style="display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:10px;flex:1;min-height:0"></div>
+</div>
+
+
+<!-- ══ SLIDE 5: Histórico de Vendas por Ciclo ══════════════ -->
+<div class="slide" id="slide-3">
+  <div class="s1-header" style="margin-bottom:14px">
+    <div>
+      <h1>Histórico de Vendas — Acumulado por Dia</h1>
+      <div class="s1-meta">
+        <span class="badge">Dia 20 ao Dia 19 · cada linha = 1 ciclo</span>
+        <span class="badge g" id="hist-cycles">— ciclos</span>
+        <span style="font-size:12px;color:var(--mt2)">Linha vertical azul = hoje</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center">
+      <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+        <div style="width:24px;height:3px;background:#6366f1;border-radius:99px"></div>
+        <span style="color:#a5b4fc">Vendas do ciclo</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+        <div style="width:24px;height:2px;background:#ef4444;border-radius:99px;border-top:1px dashed #ef4444"></div>
+        <span style="color:#fca5a5">Meta R$1.250.000</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+        <div style="width:10px;height:10px;border-radius:50%;background:#22c55e"></div>
+        <span style="color:#86efac">Acima da meta</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
+        <span style="color:#fca5a5">Abaixo da meta</span>
+      </div>
+    </div>
+  </div>
+  <div style="flex:1;min-height:0;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px 24px">
+    <div id="hist-chart" style="width:100%;height:100%"></div>
+  </div>
+</div>
+
+</div><!-- /slides -->
+
+<div class="countdown"><div class="ct"><div class="cf" id="cf" style="width:100%"></div></div><span id="ct-lbl">—</span></div>
+
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyUIgHwkceXFMcrTJF1V1qPjtxYKRXU-qdbPxXVFr6EAUEgYvp0Y0emRFsoJ1zrLrgNMg/exec';
+const SLIDE_SEC=30, REFRESH=300;
+
+const DAYS_PT=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const DAYS_SH=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const VENUE_CLR={'meyer':'#16a34a','giardino':'#2563eb','villa domenica':'#ca8a04','villa domênica':'#ca8a04','villa':'#ca8a04'};
+
+const CONS_EMAIL={
+  'marcelo@grupoprimore.com.br':{name:'Marcelo',color:'#eab308',bg:'rgba(234,179,8,.12)'},
+  'lucas@grupoprimore.com.br':  {name:'Lucas',  color:'#22c55e',bg:'rgba(34,197,94,.12)'},
+  'filipe@grupoprimore.com.br': {name:'Filipe', color:'#7dd3fc',bg:'rgba(125,211,252,.12)'},
+  'marcosjoel@grupoprimore.com.br': {name:'Marcos', color:'#f97316',bg:'rgba(249,115,22,.12)'},
+};
+const CONS_CFG={
+  'Lucas':  {nivel:'Senior',minimo:600000,meta:750000,nClass:'nsr'},
+  'Marcelo':{nivel:'Pleno', minimo:450000,meta:600000,nClass:'npl'},
+  'Filipe': {nivel:'Junior',minimo:250000,meta:450000,nClass:'njr'},
+  'Marcos': {nivel:'Pleno', minimo:450000,meta:600000,nClass:'npl'},
+};
+
+function vc(n){return VENUE_CLR[(n||'').toLowerCase().trim()]||'#8b949e';}
+function fmtBRL(v){return'R$ '+Math.abs(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function fmtTime(s){return s?s.slice(11,16):'—';}
+
+function updateClock(){
+  const n=new Date();
+  document.getElementById('date-el').textContent=String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();
+  document.getElementById('wd-el').textContent=DAYS_PT[n.getDay()];
+}
+
+function cycleDays(){
+  const t=new Date(),day=t.getDate(),mo=t.getMonth(),yr=t.getFullYear();
+  let sm,sy,em,ey;
+  if(day>=20){sm=mo;sy=yr;em=(mo+1)%12;ey=mo===11?yr+1:yr;}
+  else{sm=(mo-1+12)%12;sy=mo===0?yr-1:yr;em=mo;ey=yr;}
+  const start=new Date(sy,sm,20),end=new Date(ey,em,19);
+  const total=Math.round((end-start)/864e5)+1;
+  const elapsed=Math.round((t-start)/864e5)+1;
+  return{total,elapsed,remaining:total-elapsed};
+}
+
+// ── Slide 1 ─────────────────────────────────────────────────
+function renderSales(d){
+  document.getElementById('cycle-badge').textContent=d.cycle||'—';
+  const{total:td,elapsed,remaining}=cycleDays();
+  document.getElementById('days-badge').textContent=`Dia ${elapsed} de ${td}`;
+  document.getElementById('days-badge').className='badge '+(remaining<=5?'r':remaining<=10?'a':'g');
+  document.getElementById('cdays-el').textContent=`${remaining} dia${remaining!==1?'s':''} restante${remaining!==1?'s':''}`;
+  document.getElementById('kpi-total').textContent=fmtBRL(d.total||0);
+  document.getElementById('kpi-qtd').textContent=`${d.count||0} contrato${d.count!==1?'s':''}`;
+  document.getElementById('kpi-pct').textContent=`${d.pct||0}% atingido`;
+  document.getElementById('kpi-falta').textContent=fmtBRL(d.falta||0);
+  document.getElementById('kpi-falta-sub').textContent=(d.falta||0)<=0?'🎯 Meta atingida!':'Faltam '+fmtBRL(d.falta||0);
+  const pf=document.getElementById('kpi-pf');
+  pf.style.width=(d.pct||0)+'%';
+  pf.style.background=(d.pct||0)>=100?'var(--gold)':(d.pct||0)>=70?'var(--green)':'var(--blue)';
+
+  // Consultores
+  document.getElementById('cons-row').innerHTML=Object.entries(CONS_CFG).map(([name,cfg])=>{
+    let atual=0,cnt=0;
+    Object.entries(d.consultor||{}).forEach(([k,v])=>{if(k.toLowerCase().includes(name.toLowerCase())||name.toLowerCase().includes(k.toLowerCase())){atual+=v.t;cnt+=v.n;}});
+    const pct=cfg.meta>0?Math.min(100,Math.round(atual/cfg.meta*100)):0;
+    const color=pct>=100?'var(--gold)':pct>=67?'var(--green)':pct>=40?'var(--blue)':'var(--red)';
+    const atMin=atual>=cfg.minimo;
+    const stColor=pct>=100?'#fde047':atMin?'#86efac':'#fca5a5';
+    const stTxt=pct>=100?'✓ Meta atingida':atMin?'Acima do mínimo':'Abaixo do mínimo';
+    return`<div class="cons-card">
+      <div class="cons-top"><span class="cons-name">${name}</span><span class="cnivel ${cfg.nClass}">${cfg.nivel}</span></div>
+      <div class="cons-nums">
+        <div><div class="cons-atual" style="color:${color}">${fmtBRL(atual)}</div><div style="font-size:11px;color:var(--mt2);margin-top:1px">${cnt} contrato${cnt!==1?'s':''}</div></div>
+        <div style="text-align:right"><div class="cons-meta-lbl">Meta</div><div class="cons-meta-val">${fmtBRL(cfg.meta)}</div></div>
+      </div>
+      <div class="bat-wrap">
+        <div class="bat-body"><div class="bat-fill" style="width:${pct}%;background:${color}"><span class="bat-pct">${pct}%</span></div></div>
+        <div class="bat-tip"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:10px;color:var(--mt)">Mín: ${fmtBRL(cfg.minimo)}</span>
+        <span class="cons-status" style="color:${stColor}">${stTxt}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Tables
+  function renderPie(elId, data, clrFn){
+    const el=document.getElementById(elId);
+    const entries=Object.entries(data||{}).sort((a,b)=>b[1].t-a[1].t);
+    if(!entries.length){el.innerHTML='<div style="color:var(--mt);font-size:13px">Sem dados</div>';return;}
+
+    const PALETTE=['#6366f1','#a855f7','#06b6d4','#f59e0b','#22c55e','#f97316','#ec4899','#14b8a6'];
+    const total=entries.reduce((s,[,v])=>s+v.t,0);
+
+    const W=el.clientWidth||420, H=el.clientHeight||220;
+    const R=Math.min(W*0.32, H*0.42);
+    const cx=W*0.35, cy=H/2;
+
+    let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+
+    // Draw slices
+    let angle=-Math.PI/2;
+    entries.forEach(([name,d],i)=>{
+      const color=clrFn?clrFn(name):(PALETTE[i%PALETTE.length]);
+      const slice=d.t/total*Math.PI*2;
+      const x1=cx+R*Math.cos(angle);
+      const y1=cy+R*Math.sin(angle);
+      const x2=cx+R*Math.cos(angle+slice);
+      const y2=cy+R*Math.sin(angle+slice);
+      const large=slice>Math.PI?1:0;
+      // Label position
+      const midAngle=angle+slice/2;
+      const lr=R*0.65;
+      const lx=cx+lr*Math.cos(midAngle);
+      const ly=cy+lr*Math.sin(midAngle);
+      const pct=Math.round(d.t/total*100);
+
+      svg+=`<path d="M ${cx} ${cy} L ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} Z"
+        fill="${color}" stroke="#07090d" stroke-width="2"/>`;
+      if(pct>=8){
+        svg+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle"
+          fill="white" font-size="11" font-weight="700" font-family="DM Mono,monospace">${pct}%</text>`;
+      }
+      angle+=slice;
+    });
+
+    // Center hole (donut effect)
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${R*0.42}" fill="#0d1117"/>`;
+    // Center label
+    svg+=`<text x="${cx}" y="${cy-7}" text-anchor="middle" fill="var(--mt2)" font-size="10" font-family="DM Sans">Total</text>`;
+    svg+=`<text x="${cx}" y="${cy+9}" text-anchor="middle" fill="var(--tx)" font-size="11" font-weight="700" font-family="DM Mono,monospace">${fmtBRL(total)}</text>`;
+
+    // Legend (right side)
+    const legendX=cx+R+16;
+    const lineH=Math.min(28, (H-20)/entries.length);
+    entries.forEach(([name,d],i)=>{
+      const color=clrFn?clrFn(name):(PALETTE[i%PALETTE.length]);
+      const pct=Math.round(d.t/total*100);
+      const ly=20+(i+0.5)*lineH;
+      svg+=`<rect x="${legendX}" y="${ly-6}" width="10" height="10" rx="2" fill="${color}"/>`;
+      svg+=`<text x="${legendX+14}" y="${ly+2}" fill="var(--tx)" font-size="11" font-weight="600" font-family="DM Sans">${name}</text>`;
+      svg+=`<text x="${W-6}" y="${ly+2}" text-anchor="end" fill="${color}" font-size="10" font-weight="700" font-family="DM Mono,monospace">${fmtBRL(d.t)}</text>`;
+    });
+
+    svg+='</svg>';
+    el.innerHTML=svg;
+  }
+  renderPie('pie-sdr', d.sdr, null);
+  renderPie('pie-esp', d.espaco, n=>vc(n));
+}
+
+// ── Slide 2 ─────────────────────────────────────────────────
+function renderVisits(v){
+  const grid=document.getElementById('cal-grid');
+  if(!v||!v.events){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--mt)">${v?.error||'Sem dados'}</div>`;
+    return;
+  }
+
+  const events=v.events||[];
+  const today=new Date();
+  const todayStr=today.toISOString().slice(0,10);
+
+  // Build week (Mon–Sun)
+  const dow=today.getDay();
+  const monday=new Date(today);
+  monday.setDate(today.getDate()-(dow===0?6:dow-1));
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d;});
+
+  // Week label
+  const ws=days[0],we=days[6];
+  document.getElementById('week-badge').textContent=
+    `${String(ws.getDate()).padStart(2,'0')}/${String(ws.getMonth()+1).padStart(2,'0')} a ${String(we.getDate()).padStart(2,'0')}/${String(we.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('total-visits').textContent=`${events.length} visita${events.length!==1?'s':''}`;
+
+  // Consultant summary pills
+  const cnts={};
+  events.forEach(ev=>{
+    const email=(ev.guests||[])[0]||'';
+    const c=CONS_EMAIL[email];
+    const k=c?c.name:'Outro';
+    cnts[k]=(cnts[k]||0)+1;
+  });
+  const pillCfg=[
+    {name:'Marcelo',email:'marcelo@grupoprimore.com.br'},
+    {name:'Lucas',  email:'lucas@grupoprimore.com.br'},
+    {name:'Filipe', email:'filipe@grupoprimore.com.br'},
+    {name:'Marcos', email:'marcosjoel@grupoprimore.com.br'},
+  ];
+  document.getElementById('cons-summary').innerHTML=pillCfg.map(({name,email})=>{
+    const c=CONS_EMAIL[email];const n=cnts[name]||0;
+    return`<div class="cs-pill" style="border-color:${c.color}30">
+      <div class="cs-dot" style="background:${c.color}"></div>
+      <span class="cs-name" style="color:${c.color}">${name}</span>
+      <span class="cs-count" style="color:${c.color}">${n}</span>
+    </div>`;
+  }).join('');
+
+  // Index events by day → hour → list
+  const idx={};
+  events.forEach(ev=>{
+    const ds=ev.start.slice(0,10);
+    const h=parseInt(ev.start.slice(11,13));
+    if(!idx[ds])idx[ds]={};
+    if(!idx[ds][h])idx[ds][h]=[];
+    idx[ds][h].push(ev);
+  });
+
+  // Time range: detect from events, default 09-20
+  const allHours=events.map(e=>parseInt(e.start.slice(11,13)));
+  const minH=allHours.length?Math.min(...allHours,9):9;
+  const maxH=allHours.length?Math.max(...allHours,19):19;
+  const slots=Array.from({length:maxH-minH+1},(_,i)=>minH+i);
+
+  // Day event counts
+  const dayCnt={};
+  events.forEach(ev=>{const ds=ev.start.slice(0,10);dayCnt[ds]=(dayCnt[ds]||0)+1;});
+
+  // Build HTML
+  let html='';
+
+  // Corner
+  html+='<div class="cal-corner"></div>';
+
+  // Day headers
+  days.forEach(day=>{
+    const ds=day.toISOString().slice(0,10);
+    const isToday=ds===todayStr;
+    const cnt=dayCnt[ds]||0;
+    html+=`<div class="cal-dayhdr${isToday?' today':''}">
+      <div class="dname">${DAYS_SH[day.getDay()]} ${String(day.getDate()).padStart(2,'0')}/${String(day.getMonth()+1).padStart(2,'0')}</div>
+      <div class="dcnt">${cnt?cnt+' visita'+(cnt!==1?'s':''):'—'}</div>
+    </div>`;
+  });
+
+  // Time rows
+  slots.forEach(h=>{
+    // Time label
+    html+=`<div class="cal-time">${String(h).padStart(2,'0')}:00</div>`;
+
+    // Day cells
+    days.forEach(day=>{
+      const ds=day.toISOString().slice(0,10);
+      const isToday=ds===todayStr;
+      const slotEvs=(idx[ds]&&idx[ds][h])||[];
+      const filled=slotEvs.length>0;
+
+      const chips=slotEvs.map(ev=>{
+        const email=(ev.guests||[])[0]||'';
+        const c=CONS_EMAIL[email];
+        const color=c?c.color:'var(--mt)';
+        const bg=c?c.bg:'rgba(255,255,255,.04)';
+        const dotColor=ev.type==='bastao'?'#ef4444':'#22c55e';
+        const dot=`<span style="width:7px;height:7px;border-radius:50%;background:${dotColor};display:inline-block;margin-right:4px;vertical-align:middle"></span>`;
+        return`<div class="ev-chip" style="border-left-color:${color};background:${bg}">
+          <div class="et" style="color:${color}">${dot}${fmtTime(ev.start)}–${fmtTime(ev.end)}</div>
+          <div class="en">${ev.title}</div>
+          <div class="ec" style="color:${color}">${c?c.name:'—'}</div>
+        </div>`;
+      }).join('');
+
+      html+=`<div class="cal-cell${isToday?' today':''}${filled?' filled':''}">${chips}</div>`;
+    });
+  });
+
+  grid.innerHTML=html;
+}
+
+
+// ── Slide 3: Faturamento ─────────────────────────────────────
+function renderFaturamento(fatura){
+  if(!fatura){return;}
+  const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const YEARS=[2024,2025,2026];
+  const COLORS={2024:'#6366f1',2025:'#a855f7',2026:'#f59e0b'};
+
+  // KPI cards
+  const cards=document.getElementById('fat-cards');
+  const y2024=fatura[2024]||{monthly:Array(12).fill(0),total:0};
+  const y2025=fatura[2025]||{monthly:Array(12).fill(0),total:0};
+  const y2026=fatura[2026]||{monthly:Array(12).fill(0),total:0};
+  const chg25=y2024.total>0?((y2025.total-y2024.total)/y2024.total*100).toFixed(1):0;
+  const chg26=y2025.total>0?((y2026.total-y2025.total)/y2025.total*100).toFixed(1):0;
+
+  cards.innerHTML=[
+    {year:2024,d:y2024,label:'Faturamento 2024',sub:'Ano completo',chg:null,color:'#6366f1'},
+    {year:2025,d:y2025,label:'Faturamento 2025',sub:'Ano completo',chg:chg25,color:'#a855f7'},
+    {year:2026,d:y2026,label:'Faturamento 2026',sub:'Parcial — meses com venda',chg:chg26,color:'#f59e0b'},
+  ].map(({year,d,label,sub,chg,color})=>{
+    const chgHtml=chg!==null?`<span style="font-size:12px;font-weight:600;color:${chg>=0?'#86efac':'#fca5a5'}">${chg>=0?'+':''}${chg}% vs ano ant.</span>`:'';
+    return`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px 20px;border-left:3px solid ${color}">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mt2);margin-bottom:6px">${label}</div>
+      <div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;color:${color};line-height:1;margin-bottom:4px">${fmtBRL(d.total)}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;color:var(--mt)">${sub}</span>
+        ${chgHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  // SVG chart
+  const chartEl=document.getElementById('fat-chart');
+  const W=chartEl.clientWidth||1760;
+  const H=chartEl.clientHeight||580;
+  const PL=72,PR=20,PT=10,PB=36;
+  const chartW=W-PL-PR, chartH=H-PT-PB;
+
+  // Max value for Y scale
+  let maxVal=0;
+  YEARS.forEach(yr=>{
+    const d=fatura[yr];
+    if(d)d.monthly.forEach(v=>{if(v>maxVal)maxVal=v;});
+  });
+  maxVal=Math.ceil(maxVal/200000)*200000||1400000;
+
+  const toX=i=>PL+(i/11)*chartW;
+  const toY=v=>PT+chartH*(1-v/maxVal);
+
+  let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible">
+    <defs>
+      ${YEARS.map(yr=>`<filter id="glow${yr}"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`).join('')}
+    </defs>`;
+
+  // Grid lines & Y labels
+  const steps=6;
+  for(let i=0;i<=steps;i++){
+    const v=maxVal/steps*i;
+    const y=toY(v);
+    svg+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
+    svg+=`<text x="${PL-8}" y="${y+4}" text-anchor="end" fill="#6e7681" font-size="11" font-family="DM Mono,monospace">${v>=1000000?'R$'+(v/1000000).toFixed(1)+'M':'R$'+(v/1000).toFixed(0)+'k'}</text>`;
+  }
+
+  // X labels
+  MONTHS.forEach((m,i)=>{
+    svg+=`<text x="${toX(i)}" y="${H-4}" text-anchor="middle" fill="#6e7681" font-size="12" font-family="DM Sans,sans-serif">${m}</text>`;
+  });
+
+  // Draw each year
+  YEARS.forEach(yr=>{
+    const d=fatura[yr];if(!d)return;
+    const color=COLORS[yr];
+    const pts=d.monthly.map((v,i)=>({x:toX(i),y:toY(v),v})).filter(p=>p.v>0);
+    if(!pts.length)return;
+
+    // Area fill
+    const areaPath=`M ${pts[0].x} ${toY(0)} `+pts.map(p=>`L ${p.x} ${p.y}`).join(' ')+` L ${pts[pts.length-1].x} ${toY(0)} Z`;
+    svg+=`<path d="${areaPath}" fill="${color}" opacity="0.06"/>`;
+
+    // Line
+    const linePath='M '+pts.map(p=>`${p.x} ${p.y}`).join(' L ');
+    const dash=yr===2026?' stroke-dasharray="10,4"':'';
+    svg+=`<path d="${linePath}" fill="none" stroke="${color}" stroke-width="2.5"${dash} stroke-linejoin="round" stroke-linecap="round"/>`;
+
+    // Dots + value labels
+    pts.forEach(p=>{
+      svg+=`<circle cx="${p.x}" cy="${p.y}" r="5" fill="${color}" stroke="#07090d" stroke-width="2"/>`;
+      const label=p.v>=1000000?'R$'+(p.v/1000000).toFixed(2)+'M':'R$'+(p.v/1000).toFixed(0)+'k';
+      svg+=`<text x="${p.x}" y="${p.y-10}" text-anchor="middle" fill="${color}" font-size="10" font-family="DM Mono,monospace" opacity="0.85">${label}</text>`;
+    });
+  });
+
+  svg+='</svg>';
+  chartEl.innerHTML=svg;
+  document.getElementById('fat-upd').textContent='Atualizado';
+}
+
+
+// ── Slide 4: Quadrimestre ────────────────────────────────────
+function renderQuadrimestres(data){
+  if(!data)return;
+  const CONS_ORDER=['Lucas','Marcelo','Filipe','Marcos'];
+  const CONS_FULL={'Lucas':'Lucas Vieira','Marcelo':'Marcelo Wagmann','Filipe':'Filipe Pinheiro','Marcos':'Marcos Joel'};
+  const CONS_COLOR={'Lucas':'var(--lucas)','Marcelo':'var(--marcelo)','Filipe':'var(--filipe)','Marcos':'#f97316'};
+  const NIVEL_CLASS={'Senior':'nsr','Pleno':'npl','Junior':'njr'};
+  const NIVEL_LOWER={'Senior':'Pleno','Pleno':'Junior','Junior':'—'};
+  const NIVEL_UPPER={'Senior':null,'Pleno':'Senior','Junior':'Pleno'};
+  const quadInfo={
+    Lucas:  {period:'20/mai → 19/set'},
+    Marcelo:{period:'20/abr → 19/ago'},
+    Filipe: {period:'20/jun → 19/out'},
+    Marcos: {period:'20/jul → 19/nov'},
+  };
+
+  document.getElementById('quad-period').textContent='Quadrimestres individuais · avaliação 4 meses';
+  document.getElementById('quad-mes').textContent='↑ Subir: top 3 ≥ Meta · ↔ Manter: top 3 ≥ Mínimo';
+
+  const grid=document.getElementById('quad-grid');
+  grid.innerHTML=CONS_ORDER.map(cname=>{
+    const d=data[cname]; if(!d) return '';
+    const color=CONS_COLOR[cname];
+    const nc=NIVEL_CLASS[d.nivel];
+
+    // ── Calculate top 3 sum from months ──────────────────────
+    const validMonths=d.months.filter(m=>m.status!=='futuro'&&m.sales>0);
+    const sorted=[...validMonths].sort((a,b)=>b.sales-a.sales);
+    const top3=sorted.slice(0,3);
+    const top3Sum=top3.reduce((a,b)=>a+b.sales,0);
+    const top3Ids=new Set(top3.map(m=>m.month));
+
+    const elapsed=d.elapsed;
+    const remaining=4-elapsed;
+    const quadDone=remaining===0;
+
+    // ── Targets ───────────────────────────────────────────────
+    const targetManter=d.minimo*3;       // e.g. 600k×3 = 1.800.000
+    const targetSubir=d.metaSubida?d.metaSubida*3:null;
+    const faltaManter=Math.max(0,targetManter-top3Sum);
+    const faltaSubir=targetSubir?Math.max(0,targetSubir-top3Sum):null;
+    const pctManter=Math.min(100,Math.round(top3Sum/targetManter*100));
+    const pctSubir=targetSubir?Math.min(100,Math.round(top3Sum/targetSubir*100)):null;
+
+    // ── Final diagnosis ───────────────────────────────────────
+    let diagnosis='';
+    if(quadDone){
+      if(targetSubir && top3Sum>=targetSubir){
+        diagnosis=`<div style="background:rgba(253,224,71,.1);border:1px solid rgba(253,224,71,.3);border-radius:8px;padding:10px 14px;margin-top:8px">
+          <div style="font-size:14px;font-weight:700;color:#fde047;margin-bottom:3px">🚀 RESULTADO FINAL: SOBE PARA ${NIVEL_UPPER[d.nivel]?.toUpperCase()}</div>
+          <div style="font-size:11px;color:var(--tx)">Top 3 acumulado (${fmtBRL(top3Sum)}) ≥ meta para subida (${fmtBRL(targetSubir)}). Parabéns!</div>
+          <div style="font-size:10px;color:var(--mt);margin-top:4px">Próximo quadrimestre começa com nível ${NIVEL_UPPER[d.nivel]}</div>
+        </div>`;
+      } else if(top3Sum>=targetManter){
+        diagnosis=`<div style="background:rgba(134,239,172,.08);border:1px solid rgba(134,239,172,.25);border-radius:8px;padding:10px 14px;margin-top:8px">
+          <div style="font-size:14px;font-weight:700;color:#86efac;margin-bottom:3px">✅ RESULTADO FINAL: PERMANECE COMO ${d.nivel.toUpperCase()}</div>
+          <div style="font-size:11px;color:var(--tx)">Top 3 acumulado (${fmtBRL(top3Sum)}) ≥ mínimo de manutenção (${fmtBRL(targetManter)}).</div>
+          <div style="font-size:10px;color:var(--mt);margin-top:4px">Próximo quadrimestre começa com nível ${d.nivel}</div>
+        </div>`;
+      } else {
+        diagnosis=`<div style="background:rgba(252,165,165,.08);border:1px solid rgba(252,165,165,.3);border-radius:8px;padding:10px 14px;margin-top:8px">
+          <div style="font-size:14px;font-weight:700;color:#fca5a5;margin-bottom:3px">⬇️ RESULTADO FINAL: DESCE PARA ${NIVEL_LOWER[d.nivel]?.toUpperCase()}</div>
+          <div style="font-size:11px;color:var(--tx)">Top 3 acumulado (${fmtBRL(top3Sum)}) abaixo do mínimo (${fmtBRL(targetManter)}).</div>
+          <div style="font-size:10px;color:var(--mt);margin-top:4px">Próximo quadrimestre começa com nível ${NIVEL_LOWER[d.nivel]}</div>
+        </div>`;
+      }
+    }
+
+    // ── Month mini bars ───────────────────────────────────────
+    const maxSale=Math.max(...d.months.map(m=>m.sales),targetManter/3);
+    const monthBars=d.months.map(m=>{
+      const isTop=top3Ids.has(m.month)&&m.sales>0;
+      const barW=m.sales>0?Math.round(m.sales/maxSale*100):0;
+      const bgColor=m.status==='futuro'?'rgba(255,255,255,.03)':m.status==='atual'?'rgba(37,99,235,.06)':'rgba(255,255,255,.05)';
+      const labelColor=m.status==='futuro'?'var(--mt)':m.status==='atual'?'#93c5fd':'var(--mt2)';
+      const topBadge=isTop?`<span style="font-size:9px;background:${color}22;color:${color};padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px">★ TOP</span>`:'';
+      const valueStr=m.sales>0?fmtBRL(m.sales):(m.status==='futuro'?'—':'R$ 0');
+      return`<div style="background:${bgColor};border-radius:5px;padding:6px 10px;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:600;color:${labelColor};min-width:70px">Mês ${m.month} · ${m.label}</span>
+        <div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden">
+          ${m.sales>0?`<div style="height:100%;width:${barW}%;background:${isTop?color:'rgba(255,255,255,.2)'};border-radius:99px"></div>`:''}
+        </div>
+        <span style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:${isTop?color:m.sales>0?'var(--mt2)':'var(--mt)'};min-width:100px;text-align:right">${valueStr}</span>
+        ${topBadge}
+      </div>`;
+    }).join('');
+
+    // ── Target progress bars ──────────────────────────────────
+    function targetBar(label, target, sum, pct, accentColor, showFalta){
+      const falta=Math.max(0,target-sum);
+      const barColor=pct>=100?'#fde047':pct>=70?accentColor:pct>=40?'#93c5fd':'#fca5a5';
+      return`<div style="background:var(--sf2);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:700;color:var(--mt2);text-transform:uppercase;letter-spacing:.5px">${label}</span>
+          <span style="font-size:10px;color:var(--mt)">alvo: <strong style="color:${barColor};font-family:'DM Mono',monospace">${fmtBRL(target)}</strong></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div style="flex:1;height:18px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.08)">
+            <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;transition:width .8s">
+              ${pct>=15?`<span style="font-size:9px;font-weight:700;color:rgba(0,0,0,.7)">${pct}%</span>`:''}
+            </div>
+          </div>
+          ${pct<15?`<span style="font-size:10px;font-family:'DM Mono',monospace;color:${barColor}">${pct}%</span>`:''}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px">
+          <span style="color:var(--mt)">Acumulado top 3: <strong style="color:${barColor};font-family:'DM Mono',monospace">${fmtBRL(sum)}</strong></span>
+          ${showFalta&&falta>0?`<span style="color:#fca5a5">Falta: <strong style="font-family:'DM Mono',monospace">${fmtBRL(falta)}</strong></span>`:''}
+          ${pct>=100?`<span style="color:#fde047;font-weight:700">✓ Atingido!</span>`:''}
+        </div>
+      </div>`;
+    }
+
+    // ── Recalculate alert with correct top-3 logic ───────────
+    // Rule: 4 months, BEST 3 count. Worst is excluded.
+    // "Needed" must be divided only by months that WILL fill top-3 slots.
+
+    const allWithData   = d.months.filter(m => m.sales > 0);
+    const completedMths = d.months.filter(m => m.status === 'concluido' && m.sales > 0);
+    const inProgressMths= d.months.filter(m => m.status === 'atual');
+    const futureMths    = d.months.filter(m => m.status === 'futuro');
+
+    // Sort all months with data to find worst
+    const allSortedAsc  = [...allWithData].sort((a,b) => a.sales - b.sales);
+    const worstMonth    = allSortedAsc[0]; // will be excluded if we get 4 months
+
+    // Top 3 = best 3 of all months with data
+    const top3sorted    = [...allWithData].sort((a,b) => b.sales - a.sales);
+    const myTop3        = top3sorted.slice(0,3);
+    const myTop3Sum     = myTop3.reduce((a,b) => a+b.sales, 0);
+    const openTop3Slots = Math.max(0, 3 - myTop3.length); // slots not yet filled
+
+    // Months that will fill remaining top-3 slots (future months)
+    // In-progress month: already counted in myTop3 if it's among the best
+    const inProgressInTop3 = inProgressMths.filter(m => myTop3.some(t => t.month===m.month));
+    const inProgressNotInTop3 = inProgressMths.filter(m => !myTop3.some(t => t.month===m.month));
+
+    // Months that will ADD to top-3 = future months (that will fill open slots)
+    // Plus in-progress if not yet in top 3 (but might improve and enter)
+    const monthsThatWillCount = futureMths.length;
+    // If the in-progress month is already in top 3, it can still improve (increase top3Sum)
+    // but we don't add it again to divisor
+
+    // Needed to MAINTAIN
+    const neededManterTotal = Math.max(0, targetManter - myTop3Sum);
+    const divisorManter     = Math.max(1, monthsThatWillCount + (inProgressInTop3.length > 0 && neededManterTotal > 0 ? 0 : 0));
+    // If open slots > 0, divide by future months count
+    // If top3 is full but avg < target, divide by future months (they can replace worst)
+    const effectiveDivisor  = Math.max(1, futureMths.length);
+    const neededPerMes      = neededManterTotal > 0 ? Math.ceil(neededManterTotal / effectiveDivisor) : 0;
+
+    // Needed to RISE (for those with metaSubida)
+    const neededSubirTotal  = d.metaSubida ? Math.max(0, d.metaSubida*3 - myTop3Sum) : null;
+    const neededPerMesSubir = neededSubirTotal ? Math.ceil(neededSubirTotal / effectiveDivisor) : null;
+
+    // Build alert info
+    const hasInProgress = inProgressMths.length > 0;
+    const worstLabel    = worstMonth ? worstMonth.label : '';
+    const worstVal      = worstMonth ? worstMonth.sales : 0;
+    const willExclude   = allWithData.length >= 2 && worstMonth && !myTop3.every(m => m.month === worstMonth.month);
+
+    let alertIcon, alertLabel, alertColor, alertBg, alertBody;
+
+    if(quadDone){
+      // Already handled in diagnosis block
+      alertIcon=''; alertLabel=''; alertColor='transparent'; alertBg='transparent'; alertBody='';
+    } else if(myTop3Sum >= targetManter && (!d.metaSubida || myTop3Sum >= d.metaSubida)){
+      alertIcon='🚀'; alertLabel='SUBINDO DE NÍVEL'; alertColor='#fde047'; alertBg='rgba(253,224,71,.08)';
+      alertBody=`Média top 3 já garante subida de nível! Continue no ritmo.`;
+    } else if(myTop3Sum >= targetManter){
+      alertIcon='✅'; alertLabel='CONFORTÁVEL'; alertColor='#86efac'; alertBg='rgba(134,239,172,.08)';
+      const faltaSubir = d.metaSubida ? fmtBRL(d.metaSubida*3 - myTop3Sum) : '';
+      alertBody=`Permanência como ${d.nivel} garantida.${d.metaSubida?' Falta '+faltaSubir+' no top 3 para subir de nível.':''}`;
+    } else if(futureMths.length === 0 && !hasInProgress){
+      alertIcon='🔴'; alertLabel='RISCO'; alertColor='#fca5a5'; alertBg='rgba(252,165,165,.08)';
+      alertBody=`Quadrimestre encerrado sem atingir o mínimo. Retorna para o nível anterior.`;
+    } else {
+      // Build the smart message
+      const lines = [];
+
+      // 1. Show what will be excluded
+      if(willExclude){
+        lines.push(`<span style="color:#fca5a5">⚠ Mês ${worstLabel} (${fmtBRL(worstVal)}) tem o menor valor e <strong>será desconsiderado</strong> no top 3.</span>`);
+      }
+
+      // 2. In-progress month note
+      if(hasInProgress){
+        inProgressInTop3.forEach(m => {
+          lines.push(`<span style="color:#93c5fd">🔵 Mês ${m.label} está em aberto (${fmtBRL(m.sales)} até agora) e já conta no top 3.</span>`);
+        });
+        inProgressNotInTop3.forEach(m => {
+          lines.push(`<span style="color:#93c5fd">🔵 Mês ${m.label} em aberto (${fmtBRL(m.sales)}) — ainda pode melhorar.</span>`);
+        });
+      }
+
+      // 3. Needed per month
+      if(neededManterTotal > 0 && effectiveDivisor > 0){
+        const futureLabels = futureMths.map(m => m.label).join(' e ');
+        if(neededPerMes > d.minimo * 2){
+          lines.push(`<span style="color:#fca5a5">🔴 Precisa de ${fmtBRL(neededPerMes)}/mês nos ${effectiveDivisor} meses restantes (${futureLabels}) para manter. Valor muito alto — <strong>risco de descer</strong>.</span>`);
+          alertIcon='🔴'; alertLabel='RISCO'; alertColor='#fca5a5'; alertBg='rgba(252,165,165,.08)';
+        } else {
+          lines.push(`<span style="color:#fcd34d">Precisa de <strong style="font-size:13px">${fmtBRL(neededPerMes)}/mês</strong> nos ${effectiveDivisor} meses restantes (${futureLabels}) para manter como ${d.nivel}.</span>`);
+          alertIcon='⚠️'; alertLabel='ATENÇÃO'; alertColor='#fcd34d'; alertBg='rgba(252,211,77,.08)';
+        }
+        if(neededPerMesSubir && d.metaSubida){
+          lines.push(`<span style="color:#fde047">Para subir: precisaria de ${fmtBRL(neededPerMesSubir)}/mês.</span>`);
+        }
+      } else if(futureMths.length === 0 && hasInProgress){
+        lines.push(`<span style="color:#93c5fd">Último ciclo em aberto. Acumulado top 3: ${fmtBRL(myTop3Sum)}. Meta: ${fmtBRL(targetManter)}.</span>`);
+        alertIcon='🔵'; alertLabel='CICLO EM ABERTO'; alertColor='#93c5fd'; alertBg='rgba(147,197,253,.08)';
+      } else {
+        lines.push(`Início do quadrimestre. Meta total top 3: ${fmtBRL(targetManter)}.`);
+        alertIcon='🏁'; alertLabel='INÍCIO'; alertColor='#93c5fd'; alertBg='rgba(147,197,253,.08)';
+      }
+
+      if(!alertIcon){ alertIcon='⚠️'; alertLabel='ATENÇÃO'; alertColor='#fcd34d'; alertBg='rgba(252,211,77,.08)'; }
+      alertBody = lines.join('<br>');
+    }
+
+    const al={color:alertColor,bg:alertBg,icon:alertIcon,label:alertLabel,body:alertBody};
+
+    return`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px;border-top:3px solid ${color};overflow-y:auto">
+
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+        <div>
+          <div style="font-size:22px;font-weight:700;color:${color}">${CONS_FULL[cname]}</div>
+          <div style="font-size:10px;color:var(--mt2);margin-top:1px;font-family:'DM Mono',monospace">${quadInfo[cname].period} · Mês ${elapsed} de 4${remaining>0?' ('+remaining+' restante'+(remaining>1?'s':'')+')':(quadDone?' · Finalizado':'')}</div>
+        </div>
+        <span class="cnivel ${nc}">${d.nivel}</span>
+      </div>
+
+      <!-- Month bars -->
+      <div style="flex-shrink:0">${monthBars}</div>
+
+      <!-- Target bars -->
+      <div style="flex-shrink:0">
+        ${d.metaSubida?targetBar(
+          `Para subir para ${NIVEL_UPPER[d.nivel]} (top 3 ≥ ${fmtBRL(d.metaSubida)} × 3)`,
+          targetSubir, top3Sum, pctSubir, '#fde047', true
+        ):''}
+        ${targetBar(
+          d.metaSubida?`Para manter no ${d.nivel} (top 3 ≥ ${fmtBRL(d.minimo)} × 3)`:`Para manter como ${d.nivel} (top 3 ≥ ${fmtBRL(d.minimo)} × 3)`,
+          targetManter, top3Sum, pctManter, color, true
+        )}
+      </div>
+
+      <!-- Alert -->
+      ${!quadDone&&al.body?`<div style="background:${al.bg};border:1px solid ${al.color}25;border-radius:7px;padding:8px 12px;display:flex;align-items:flex-start;gap:7px;flex-shrink:0">
+        <span style="font-size:16px;flex-shrink:0">${al.icon}</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:${al.color};letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px">${al.label}</div>
+          <div style="font-size:13px;color:var(--tx);line-height:1.6">${al.body}</div>
+        </div>
+      </div>`:''}
+
+      <!-- Final diagnosis (when quad is done) -->
+      ${diagnosis}
+    </div>`;
+  }).join('');
+}
+
+
+
+// ── Slide 5: Acumulado diário por ciclo ─────────────────────
+function renderHistory(history){
+  if(!history||!history.length)return;
+  document.getElementById('hist-cycles').textContent=history.length+' ciclos';
+
+  const el=document.getElementById('hist-chart');
+  const W=el.clientWidth||1820, H=el.clientHeight||840;
+  const PL=92,PR=40,PT=30,PB=70;
+  const chartW=W-PL-PR, chartH=H-PT-PB;
+  const META=1250000;
+  const DAYS=31;
+
+  // Today: what day of the current cycle are we?
+  const today=new Date();
+  const dow=today.getDay();
+  // Find current cycle start (the 20th of appropriate month)
+  const day=today.getDate(),mo=today.getMonth(),yr=today.getFullYear();
+  const cycleStartMonth=day>=20?mo:(mo-1+12)%12;
+  const cycleStartYear=day<20&&mo===0?yr-1:yr;
+  const currentCycleStart=new Date(cycleStartYear,cycleStartMonth,20);
+  currentCycleStart.setHours(0,0,0,0);
+  // Use the actual current cycle from data if available
+  const currentCycleData=history.find(c=>c.isCurrent);
+  const refCycleStart=currentCycleData?new Date(currentCycleData.cycleStart+'T00:00:00'):currentCycleStart;
+  const todayDay=Math.round((today-refCycleStart)/864e5); // 0-indexed
+
+  // Colors per cycle
+  const COLORS=['#6366f1','#a855f7','#06b6d4','#f59e0b','#22c55e','#f97316'];
+  const maxVal=Math.max(...history.map(c=>c.total),META)*1.1;
+
+  const toX=d=>PL+(d/(DAYS-1))*chartW;
+  const toY=v=>PT+chartH*(1-Math.min(v,maxVal)/maxVal);
+  const metaY=toY(META);
+
+  let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible">`;
+
+  // Y grid
+  const yStep=META>=1000000?250000:100000;
+  for(let v=0;v<=maxVal;v+=yStep){
+    const y=toY(v); if(y<PT-5)break;
+    const isMeta=Math.abs(v-META)<5000;
+    svg+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}"
+      stroke="${isMeta?'rgba(239,68,68,.5)':'rgba(255,255,255,.05)'}"
+      stroke-width="${isMeta?1.5:1}" stroke-dasharray="${isMeta?'8,4':''}"/>`;
+    svg+=`<text x="${PL-8}" y="${y+4}" text-anchor="end"
+      fill="${isMeta?'#fca5a5':'#6e7681'}" font-size="${isMeta?11:10}"
+      font-weight="${isMeta?700:400}" font-family="DM Mono,monospace">
+      ${v>=1000000?'R$'+(v/1000000).toFixed(2)+'M':'R$'+(v/1000).toFixed(0)+'k'}
+    </text>`;
+    if(isMeta) svg+=`<text x="${W-PR+6}" y="${y+4}" fill="#fca5a5" font-size="10" font-weight="700" font-family="DM Sans">META</text>`;
+  }
+
+  // X axis labels (every 5 days)
+  for(let d=0;d<DAYS;d+=5){
+    const x=toX(d);
+    svg+=`<line x1="${x}" y1="${PT}" x2="${x}" y2="${H-PB+5}" stroke="rgba(255,255,255,.04)" stroke-width="1"/>`;
+    svg+=`<text x="${x}" y="${H-PB+18}" text-anchor="middle" fill="#6e7681" font-size="10" font-family="DM Mono">Dia ${d+1}</text>`;
+  }
+
+  // Today marker (vertical line)
+  if(todayDay>=0&&todayDay<DAYS){
+    const tx=toX(todayDay);
+    svg+=`<line x1="${tx}" y1="${PT}" x2="${tx}" y2="${H-PB}"
+      stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6,3"/>`;
+    svg+=`<text x="${tx}" y="${PT-8}" text-anchor="middle"
+      fill="#93c5fd" font-size="11" font-weight="700" font-family="DM Sans">Hoje · Dia ${todayDay+1}</text>`;
+  }
+
+  // Draw each cycle line
+  history.forEach((cycle,ci)=>{
+    const color=COLORS[ci%COLORS.length];
+    const isLast=cycle.isCurrent===true||ci===history.length-1; // current cycle
+    const pts=cycle.cumulative.map((v,d)=>({x:toX(d),y:toY(v),v,d}));
+
+    // Area fill (only for current cycle)
+    if(isLast){
+      const validPts=pts.filter(p=>p.v>0||p.d===0);
+      const lastValid=pts.filter(p=>p.d<=todayDay);
+      if(lastValid.length>1){
+        const aPath=`M ${lastValid[0].x} ${toY(0)} `+
+          lastValid.map(p=>`L ${p.x} ${p.y}`).join(' ')+
+          ` L ${lastValid[lastValid.length-1].x} ${toY(0)} Z`;
+        svg+=`<path d="${aPath}" fill="${color}" opacity="0.07"/>`;
+      }
+    }
+
+    // Line (only up to last day with data)
+    const lastDataDay=cycle.cumulative.reduceRight((acc,v,i)=>acc<0&&v>0?i:acc,-1);
+    const linePts=pts.slice(0,lastDataDay+1);
+    if(linePts.length>1){
+      const pathD='M '+linePts.map(p=>`${p.x} ${p.y}`).join(' L ');
+      svg+=`<path d="${pathD}" fill="none" stroke="${color}"
+        stroke-width="${isLast?3:1.8}"
+        stroke-dasharray="${isLast?'':'6,3'}"
+        stroke-linecap="round" stroke-linejoin="round" opacity="${isLast?1:0.7}"/>`;
+    }
+
+    // Callout at "today" vertical line
+    if(todayDay>=0&&todayDay<cycle.cumulative.length){
+      const val=cycle.cumulative[todayDay];
+      if(val>0){
+        const tx=toX(todayDay);
+        const ty=toY(val);
+        // Dot
+        svg+=`<circle cx="${tx}" cy="${ty}" r="${isLast?6:4}"
+          fill="${color}" stroke="#07090d" stroke-width="2"/>`;
+        // Value bubble
+        const label=val>=1000000?'R$'+(val/1000000).toFixed(2)+'M':'R$'+(val/1000).toFixed(0)+'k';
+        const bx=tx+(ci%2===0?10:-70);
+        const by=ty+(ci*18-history.length*9+9);
+        svg+=`<rect x="${bx}" y="${by-12}" width="64" height="18" rx="5"
+          fill="rgba(7,9,13,.9)" stroke="${color}" stroke-width="1"/>`;
+        svg+=`<text x="${bx+32}" y="${by}" text-anchor="middle"
+          fill="${color}" font-size="10" font-weight="700" font-family="DM Mono">${label}</text>`;
+      }
+    }
+
+    // End label
+    if(linePts.length>0){
+      const last=linePts[linePts.length-1];
+      const label=cycle.label;
+      svg+=`<text x="${last.x+8}" y="${last.y+4}" fill="${color}"
+        font-size="${isLast?12:10}" font-weight="${isLast?700:500}"
+        font-family="DM Sans">${label}${isLast?' ◀':''}</text>`;
+    }
+  });
+
+  // X axis line
+  svg+=`<line x1="${PL}" y1="${H-PB}" x2="${W-PR}" y2="${H-PB}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+  // Y axis line
+  svg+=`<line x1="${PL}" y1="${PT}" x2="${PL}" y2="${H-PB}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+
+  // Bottom legend
+  history.forEach((cycle,ci)=>{
+    const color=COLORS[ci%COLORS.length];
+    const isLast=ci===history.length-1;
+    const lx=PL+ci*(chartW/history.length);
+    svg+=`<line x1="${lx}" y1="${H-PB+36}" x2="${lx+20}" y2="${H-PB+36}"
+      stroke="${color}" stroke-width="${isLast?3:1.8}" stroke-dasharray="${isLast?'':'5,2'}"/>`;
+    svg+=`<text x="${lx+24}" y="${H-PB+40}" fill="${color}"
+      font-size="${isLast?12:11}" font-weight="${isLast?700:400}" font-family="DM Sans">${cycle.label}${isLast?' (atual)':''}</text>`;
+  });
+
+  svg+='</svg>';
+  el.innerHTML=svg;
+}
+
+
+// ── Load ─────────────────────────────────────────────────────
+async function load(){
+  const sdot=document.getElementById('sdot'),stxt=document.getElementById('stxt');
+  sdot.className='sdot ld';stxt.textContent='Buscando…';
+  document.getElementById('err-box').style.display='none';
+  try{
+    const res=await fetch(SCRIPT_URL);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const d=await res.json();
+    if(d.error)throw new Error(d.error);
+    renderSales(d);
+    renderVisits(d.visits);
+    if(d.faturamento)renderFaturamento(d.faturamento);
+    if(d.quadrimestres)renderQuadrimestres(d.quadrimestres);
+    if(d.cycleHistory)renderHistory(d.cycleHistory);
+    sdot.className='sdot';
+    stxt.textContent=`Atualizado às ${d.updatedAt||'—'}`;
+  }catch(e){
+    sdot.className='sdot er';stxt.textContent='Erro: '+e.message;
+    document.getElementById('err-box').textContent='⚠ '+e.message;
+    document.getElementById('err-box').style.display='block';
+  }
+}
+
+// ── Slides ────────────────────────────────────────────────────
+const N=5;let cur=0,slideT=null,progT=null,psec=0,paused=false;
+function buildDots(){
+  const dotsEl=document.getElementById('dots');
+  dotsEl.innerHTML=Array.from({length:N},(_,i)=>`<div class="dot${i===0?' on':''}" id="dt-${i}" onclick="goToManual(${i})" style="cursor:pointer"></div>`).join('');
+}
+function goToManual(n){paused=false;go(n);if(!paused)startProg();}
+function prevSlide(){paused=false;go((cur-1+N)%N);if(!paused)startProg();}
+function nextSlide(){paused=false;go((cur+1)%N);if(!paused)startProg();}
+function togglePause(){
+  paused=!paused;
+  const btn=document.getElementById('pause-btn');
+  if(paused){
+    if(slideT)clearTimeout(slideT);
+    if(progT)clearInterval(progT);
+    const pb=document.getElementById('prog');
+    pb.style.transition='none';
+    btn.textContent='▶';
+    btn.style.background='rgba(37,99,235,.3)';
+    btn.style.borderColor='rgba(37,99,235,.5)';
+  }else{
+    btn.textContent='⏸';
+    btn.style.background='rgba(255,255,255,.1)';
+    btn.style.borderColor='rgba(255,255,255,.2)';
+    startProg();
+  }
+}
+function go(n){
+  document.getElementById(`slide-${cur}`).classList.remove('on');
+  document.getElementById(`dt-${cur}`).classList.remove('on');
+  cur=n%N;
+  document.getElementById(`slide-${cur}`).classList.add('on');
+  document.getElementById(`dt-${cur}`).classList.add('on');
+  startProg();
+}
+function startProg(){
+  if(paused)return;
+  if(slideT)clearTimeout(slideT);if(progT)clearInterval(progT);
+  psec=0;const pb=document.getElementById('prog');
+  pb.style.transition='none';pb.style.width='0%';
+  setTimeout(()=>{pb.style.transition=`width ${SLIDE_SEC}s linear`;pb.style.width='100%';},50);
+  progT=setInterval(()=>{if(paused)return;psec++;if(psec>=SLIDE_SEC){clearInterval(progT);go(cur+1);}},1000);
+}
+
+// ── Countdown ─────────────────────────────────────────────────
+let cdT=null,csec=0;
+function startCD(){
+  if(cdT)clearInterval(cdT);csec=REFRESH;
+  const cf=document.getElementById('cf'),cl=document.getElementById('ct-lbl');
+  cdT=setInterval(()=>{csec--;cf.style.width=Math.max(0,Math.round(csec/REFRESH*100))+'%';
+    const m=Math.floor(csec/60),s=csec%60;cl.textContent=m+':'+String(s).padStart(2,'0');
+    if(csec<=0){clearInterval(cdT);load().then(startCD);}},1000);
+}
+
+setInterval(updateClock,1000);
+updateClock();
+buildDots();
+startProg();
+load().then(startCD);
+</script>
+
+<script>
+function fitScreen(){
+  const s=Math.min(window.innerWidth/1920,window.innerHeight/1080);
+  const ml=(window.innerWidth-1920*s)/2;
+  const mt=(window.innerHeight-1080*s)/2;
+  document.body.style.cssText+=`;transform:scale(${s});transform-origin:top left;left:${ml}px;top:${mt}px;`;
+  document.documentElement.style.background='var(--bg)';
+}
+fitScreen();
+window.addEventListener('resize',fitScreen);
+</script>
+</body>
+</html>
