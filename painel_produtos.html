@@ -1,0 +1,388 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Painel de Produtos Vendidos — Primore Eventos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F8F9FA;color:#1A1A2E}
+.topbar{background:#1A1A2E;color:#fff;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.topbar h1{font-size:18px;font-weight:700;letter-spacing:.5px}
+.topbar p{font-size:12px;color:#94A3B8;margin-top:2px}
+.topbar-right{font-size:12px;color:#64748B;text-align:right}
+.topbar-right strong{color:#94A3B8;display:block}
+.container{max-width:1240px;margin:0 auto;padding:24px 20px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi-card{background:#fff;border-radius:10px;border:1px solid #E2E8F0;padding:14px 16px}
+.kpi-label{font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.kpi-value{font-size:20px;font-weight:700}
+.kpi-sub{font-size:11px;color:#64748B;margin-top:3px}
+.tabs-wrap{background:#fff;border-radius:10px;border:1px solid #E2E8F0;overflow:hidden;margin-bottom:20px}
+.tabs-nav{display:flex;border-bottom:1px solid #E2E8F0;overflow-x:auto}
+.tab-btn{padding:12px 18px;border:none;background:none;font-size:13px;font-weight:600;color:#64748B;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+.tab-btn:hover{color:#1A1A2E;background:#F8F9FA}
+.tab-btn.active{color:#4F46E5;border-bottom-color:#4F46E5;background:#fff}
+.tab-pane{display:none;padding:20px}
+.tab-pane.active{display:block}
+.section-title{font-size:14px;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.section-title small{font-weight:500;color:#94A3B8;font-size:11px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:8px 10px;background:#F1F5F9;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#64748B;font-weight:600;text-align:left;border-bottom:1px solid #E2E8F0;white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{background:#E2E8F0}
+td{padding:8px 10px;border-bottom:1px solid #F1F5F9;color:#334155;vertical-align:top}
+tr:hover td{background:#F8FAFF}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.b-meyer{background:#DBEAFE;color:#1D4ED8}.b-giardino{background:#D1FAE5;color:#065F46}.b-villa{background:#FED7AA;color:#9A3412}
+.b-a{background:#EDE9FE;color:#5B21B6}.b-b{background:#FEF3C7;color:#92400E}
+.b-re{background:#E0E7FF;color:#3730A3}.b-custo{background:#F1F5F9;color:#475569}
+.b-ok{background:#DCFCE7;color:#166534}.b-pend{background:#FEF3C7;color:#92400E}
+.ev.open .ev-head .badge{filter:brightness(1.06)}
+.rank{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:#F1F5F9;font-size:11px;font-weight:700;color:#64748B}
+.rank.top{background:#4F46E5;color:#fff}
+.green{color:#15803D;font-weight:600}.red{color:#DC2626;font-weight:600}.amber{color:#B45309;font-weight:600}
+.alert-info{background:#EFF6FF;border-left:4px solid #3B82F6;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#1E40AF;margin-bottom:14px}
+.alert-warn{background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#92400E;margin-bottom:14px}
+.card{background:#F8F9FA;border-radius:8px;padding:16px;margin-bottom:16px}
+.chart-wrap{position:relative;width:100%}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.bar-label{width:180px;font-size:12px;color:#475569;flex-shrink:0}
+.bar-track{flex:1;background:#F1F5F9;border-radius:4px;height:18px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;min-width:4px}
+.bar-val{width:110px;text-align:right;font-size:12px;color:#475569;font-variant-numeric:tabular-nums}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.filtros select,.filtros input{padding:7px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;background:#fff;color:#334155;max-width:240px;font-family:inherit}
+.filtros input{width:210px}
+.filtros input:focus{outline:none;border-color:#4F46E5;box-shadow:0 0 0 2px #4F46E520}
+.filtros .cont{font-size:12px;color:#64748B;margin-left:auto}
+.ev{border:1px solid #E2E8F0;border-radius:8px;margin-bottom:10px;overflow:hidden;background:#fff}
+.ev-head{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;background:#fff;flex-wrap:wrap}
+.ev-head:hover{background:#F8FAFF}
+.ev.open .ev-head{background:#1A1A2E;color:#fff}
+.ev.open .ev-head .meta,.ev.open .ev-head .caret{color:#94A3B8}
+.ev-nome{font-size:14px;font-weight:700;flex:1;min-width:170px}
+.ev-head .meta{font-size:11px;color:#64748B}
+.ev-vals{display:flex;gap:16px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums}
+.ev-vals b{font-size:13px}
+.caret{font-size:11px;color:#94A3B8;width:14px}
+.ev-body{display:none;border-top:1px solid #E2E8F0}
+.ev.open .ev-body{display:block}
+.ev-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#F8F9FA;border-bottom:1px solid #E2E8F0}
+.ev-sum div{padding:10px 14px;border-right:1px solid #E2E8F0}
+.ev-sum span{display:block;font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px}
+.ev-sum b{font-size:14px}
+.ev-foot{padding:9px 14px;font-size:11px;color:#64748B;background:#F8F9FA;border-top:1px solid #E2E8F0}
+tfoot tr.tot td{background:#1A1A2E;color:#fff;border-bottom:none;position:sticky;bottom:0}
+tfoot tr.tot td strong{color:#fff}
+tfoot tr.tot td .green{color:#4ADE80}tfoot tr.tot td .amber{color:#FCD34D}tfoot tr.tot td .red{color:#FCA5A5}
+tfoot tr.tot:hover td{background:#1A1A2E}
+.footer{text-align:center;padding:20px;font-size:11px;color:#94A3B8}
+@media(max-width:760px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.bar-label{width:110px}
+.ev-sum{grid-template-columns:repeat(2,1fr)}.filtros select{max-width:100%;width:100%}}
+</style></head><body>
+<div id="loading-overlay" style="position:fixed;inset:0;background:#07090d;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px">
+<div style="width:48px;height:48px;border:3px solid rgba(79,70,229,.2);border-top-color:#4F46E5;border-radius:50%;animation:spin 1s linear infinite"></div>
+<p style="color:#6e7681;font-family:sans-serif;font-size:14px">Carregando painel...</p>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<div class="topbar">
+ <div><h1>Painel de Produtos Vendidos — Primore Eventos</h1><p id="sub"></p></div>
+ <div class="topbar-right"><strong>Gerado em</strong><span id="gd"></span></div>
+</div>
+<div class="container">
+ <div class="alert-warn" id="cobertura"></div>
+ <div class="kpi-grid" id="kpis"></div>
+ <div class="tabs-wrap">
+  <nav class="tabs-nav">
+   <button class="tab-btn active" onclick="tab('rank',this)">Ranking de Produtos</button>
+   <button class="tab-btn" onclick="tab('exec',this)">Por Data de Execução</button>
+   <button class="tab-btn" onclick="tab('linhas',this)">Base de Linhas</button>
+   <button class="tab-btn" onclick="tab('contratos',this)">Contratos</button>
+  </nav>
+
+  <div id="tab-rank" class="tab-pane active">
+   <div class="alert-info">Ranking consolidado por <strong>receita vendida</strong>. Cat.A = itens essenciais · Cat.B = opcionais (mínimo = custo). O desconto <strong>não</strong> é exibido por produto: a métrica válida é o Desconto Real (fórmula A+B), que só existe no nível do contrato. Contratos marcados como <span class="badge b-custo">Só custo</span> ficam fora deste ranking, porque não têm valor de tabela nem de venda por item.</div>
+   <div class="section-title">Top produtos por receita</div>
+   <div id="barsProd" style="margin-bottom:18px"></div>
+   <div class="section-title">Tabela completa <small>clique no cabeçalho para ordenar</small></div>
+   <div style="overflow-x:auto"><table id="tProd"><thead><tr>
+    <th>#</th><th data-k="produto">Produto</th><th data-k="familia">Família</th><th data-k="cat">Cat</th>
+    <th class="num" data-k="ct">Contratos</th><th class="num" data-k="qtd">Qtd</th>
+    <th class="num" data-k="tabela">Tabela</th><th class="num" data-k="vendido">Vendido</th>
+    <th class="num" data-k="custo">Custo</th><th class="num" data-k="lucro">Lucro</th>
+    <th class="num" data-k="margem">Margem</th></tr></thead><tbody></tbody><tfoot id="fProd"></tfoot></table></div>
+  </div>
+
+  <div id="tab-exec" class="tab-pane">
+   <div class="alert-info">Eventos agrupados pela <strong>data de realização</strong>. Filtre o mês e clique no nome do evento para abrir o detalhamento de produtos.</div>
+   <div class="card"><div class="section-title">Receita a executar por mês</div>
+    <div class="chart-wrap" style="height:190px"><canvas id="cExec"></canvas></div></div>
+   <div class="filtros">
+    <select id="fAnoEv"></select><select id="fMesEv"></select><select id="fEspEv"></select><select id="fVendEv"></select><select id="fConfEv"></select>
+    <span class="cont" id="contEv"></span>
+   </div>
+   <div id="listaEv"></div>
+  </div>
+
+  <div id="tab-linhas" class="tab-pane">
+   <div class="filtros">
+    <input id="fContrato" type="search" placeholder="🔎 Pesquisar contrato..." autocomplete="off">
+    <select id="fAnoLinha"></select><select id="fMesLinha"></select>
+    <select id="fFam"></select><select id="fVend"></select><select id="fEsp"></select><select id="fCat"></select><select id="fConfLinha"></select>
+    <span class="cont" id="contLinhas"></span>
+   </div>
+   <div style="overflow-x:auto"><table id="tLinhas"><thead><tr>
+    <th data-k="produto">Produto</th><th data-k="familia">Família</th><th data-k="cat">Cat</th>
+    <th data-k="cliente">Contrato</th><th data-k="vendedor">Vendedor</th><th data-k="espaco">Espaço</th>
+    <th data-k="dte">Data evento</th><th class="num" data-k="qtd">Qtd</th>
+    <th class="num" data-k="tabela">Tabela</th><th class="num" data-k="vendido">Vendido</th>
+    <th class="num" data-k="custo">Custo</th><th class="num" data-k="lucro">Lucro</th>
+    <th class="num" data-k="margem">Margem</th></tr></thead><tbody></tbody><tfoot id="fLinhas"></tfoot></table></div>
+  </div>
+
+  <div id="tab-contratos" class="tab-pane">
+   <div class="section-title">Contratos que compõem esta base</div>
+   <div style="overflow-x:auto"><table id="tCtr"><thead><tr>
+    <th>Cliente</th><th>Registro</th><th>Conferência</th><th>Espaço</th><th>Tipo</th><th>Vendedor</th>
+    <th>Data venda</th><th>Data evento</th>
+    <th class="num">Conv.</th><th class="num">Itens</th><th class="num">Tabela</th><th class="num">Vendido</th>
+    <th class="num">Custo</th><th class="num">Margem</th><th>Drive</th></tr></thead><tbody></tbody></table></div>
+  </div>
+ </div>
+ <div class="footer">Primore Eventos · Base de produtos extraída dos Resumos Executivos · Gerado via Claude</div>
+</div>
+<script>
+const GITHUB_JSON = 'https://primore609.github.io/Meyer-lotacao/painel_produtos_dados.json';
+let DADOS = null, L = null, C = null;
+
+async function loadData() {
+  try {
+    const res = await fetch(GITHUB_JSON);
+    DADOS = await res.json();
+    L = DADOS.linhas;
+    C = DADOS.contratos;
+    const ol = document.getElementById('loading-overlay');
+    if (ol) ol.remove();
+    renderPainel();
+  } catch(e) {
+    document.body.innerHTML = '<div style="padding:80px;text-align:center;background:#07090d;min-height:100vh;color:#e6edf3;font-family:sans-serif"><h2 style="color:#ef4444">Erro ao carregar dados</h2><p style="color:#6e7681;margin-top:12px">' + e.message + '</p></div>';
+  }
+}
+
+function renderPainel() {
+DADOS.linhas, C = DADOS.contratos;
+const brl = v => 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+const pc = v => v.toFixed(1).replace('.',',')+'%';
+const dbr = d => d.split('-').reverse().join('/');
+const bEsp = {Meyer:'b-meyer',Giardino:'b-giardino','Villa Domenica':'b-villa'};
+const CORES = ['#4F46E5','#0891B2','#059669','#D97706','#DB2777','#7C3AED','#DC2626','#0E7490','#65A30D'];
+const MCOR = m => m>=60?'green':m>=40?'amber':'red';
+const tagReg = r => r==='CUSTO'
+ ? '<span class="badge b-custo" title="Contrato anterior ao processo de RE — só valor de custo, para uso do financeiro">Só custo</span>'
+ : '<span class="badge b-re" title="Contrato com Resumo Executivo completo">RE completo</span>';
+const tagConf = c => c
+ ? '<span class="badge b-ok" title="RE conferido pela Tatyane em '+dbr(c)+'">✓ Conferido</span>'
+ : '<span class="badge b-pend" title="Aguardando conferência do RE pela Tatyane">Aguardando conferência</span>';
+const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const mkey = s => {const[m,y]=s.split('/');return +('20'+y)*100+MESES.indexOf(m);};
+document.getElementById('gd').textContent = new Date().toLocaleDateString('pt-BR');
+document.getElementById('sub').textContent = C.length+' contratos · '+L.length+' linhas de produto';
+const P = DADOS.pendentes;
+document.getElementById('cobertura').innerHTML = '<strong>Cobertura desta base:</strong> '+C.length+
+ ' contratos extraídos item a item. Ainda a extrair: Agosto '+P.agosto+' · Julho '+P.julho+' · Junho '+P.junho+
+ ' · Maio '+P.maio+'. Os rankings refletem apenas os contratos já processados.';
+
+function agg(arr,key){const m={};arr.forEach(l=>{const k=l[key];
+ if(!m[k])m[k]={k,qtd:0,tabela:0,vendido:0,custo:0,ct:new Set(),fam:l.familia,cat:l.cat};
+ const o=m[k];o.qtd+=l.qtd;o.tabela+=l.tabela;o.vendido+=l.vendido;o.custo+=l.custo;o.ct.add(l.cliente);});
+ return Object.values(m).map(o=>({...o,ct:o.ct.size,lucro:o.vendido-o.custo,
+  margem:o.vendido?(o.vendido-o.custo)/o.vendido*100:0}));}
+
+const RE = L.filter(l=>l.reg!=='CUSTO');
+const tv=RE.reduce((a,l)=>a+l.vendido,0), tc=RE.reduce((a,l)=>a+l.custo,0);
+const nConf=C.filter(c=>c.conf).length, nRE=C.filter(c=>c.reg!=='CUSTO').length, nCusto=C.length-nRE;
+const prods = agg(RE,'produto').sort((a,b)=>b.vendido-a.vendido);
+document.getElementById('kpis').innerHTML = `
+ <div class="kpi-card"><div class="kpi-label">Receita em produtos</div><div class="kpi-value">${brl(tv)}</div><div class="kpi-sub">${RE.length} linhas · ${prods.length} produtos distintos</div></div>
+ <div class="kpi-card"><div class="kpi-label">Lucro bruto</div><div class="kpi-value" style="color:#15803D">${brl(tv-tc)}</div><div class="kpi-sub">Margem ${pc((tv-tc)/tv*100)}</div></div>
+ <div class="kpi-card"><div class="kpi-label">Custo de fornecedores</div><div class="kpi-value">${brl(tc)}</div><div class="kpi-sub">${pc(tc/tv*100)} da receita · ticket médio ${brl(tv/C.length)}</div></div>
+ <div class="kpi-card"><div class="kpi-label">Conferência da Taty</div><div class="kpi-value" style="color:${nConf===C.length?'#15803D':'#B45309'}">${nConf}/${C.length}</div><div class="kpi-sub">${nRE} com RE completo · ${nCusto} só custo</div></div>`;
+
+/* ---------- RANKING ---------- */
+const mx=Math.max(...prods.map(r=>r.vendido));
+document.getElementById('barsProd').innerHTML=prods.slice(0,12).map((r,i)=>
+ `<div class="bar-row"><div class="bar-label">${r.k}</div><div class="bar-track">
+  <div class="bar-fill" style="width:${(r.vendido/mx*100).toFixed(1)}%;background:${CORES[i%CORES.length]}"></div></div>
+  <div class="bar-val">${brl(r.vendido)}</div></div>`).join('');
+let sk='vendido',sd=-1;
+function drawProd(){const rows=[...prods].sort((a,b)=>{const x=a[sk]??a.k,y=b[sk]??b.k;
+ return (typeof x==='string'?x.localeCompare(y):x-y)*sd;});
+ document.querySelector('#tProd tbody').innerHTML=rows.map((r,i)=>`<tr>
+ <td><span class="rank ${i<3&&sk==='vendido'&&sd===-1?'top':''}">${i+1}</span></td>
+ <td><strong>${r.k}</strong></td><td style="color:#64748B;font-size:12px">${r.fam}</td>
+ <td><span class="badge b-${r.cat.toLowerCase()}">${r.cat}</span></td>
+ <td class="num">${r.ct}</td><td class="num">${r.qtd}</td>
+ <td class="num" style="color:#94A3B8">${brl(r.tabela)}</td><td class="num"><strong>${brl(r.vendido)}</strong></td>
+ <td class="num" style="color:#94A3B8">${brl(r.custo)}</td><td class="num green">${brl(r.lucro)}</td>
+ <td class="num ${MCOR(r.margem)}">${pc(r.margem)}</td></tr>`).join('');
+ const st=prods.reduce((a,r)=>a+r.tabela,0);
+ document.getElementById('fProd').innerHTML=`<tr class="tot">
+  <td></td><td><strong>TOTAL</strong></td><td colspan="2" style="font-size:11px;color:#94A3B8">${prods.length} produtos</td>
+  <td class="num">${C.length}</td><td class="num">—</td>
+  <td class="num"><strong>${brl(st)}</strong></td><td class="num"><strong>${brl(tv)}</strong></td>
+  <td class="num"><strong>${brl(tc)}</strong></td><td class="num"><strong class="green">${brl(tv-tc)}</strong></td>
+  <td class="num"><strong class="${MCOR((tv-tc)/tv*100)}">${pc((tv-tc)/tv*100)}</strong></td></tr>`;}
+document.querySelectorAll('#tProd th[data-k]').forEach(th=>th.onclick=()=>{
+ const k=th.dataset.k;sd=(sk===k)?-sd:-1;sk=(k==='produto'||k==='familia'||k==='cat')?'k':k;
+ if(k==='familia')sk='fam';if(k==='cat')sk='cat';drawProd();});
+drawProd();
+
+/* ---------- POR DATA DE EXECUÇÃO ---------- */
+const mesesEv=[...new Set(L.map(l=>l.me))].sort((a,b)=>mkey(a)-mkey(b));
+const parEx=mesesEv.map(m=>[m,L.filter(l=>l.me===m).reduce((a,l)=>a+l.vendido,0)]);
+new Chart(document.getElementById('cExec'),{type:'bar',
+ data:{labels:parEx.map(p=>p[0]),datasets:[{data:parEx.map(p=>p[1]),backgroundColor:'#059669',borderRadius:4}]},
+ options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+ tooltip:{callbacks:{label:c=>brl(c.raw)}}},
+ scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'R$ '+(v/1000).toFixed(0)+'k'}}}}});
+
+function opts(el,lista,rot,fn){el.innerHTML=`<option value="">${rot}</option>`+
+ lista.map(v=>`<option>${v}</option>`).join('');el.onchange=fn;}
+const anosEv=[...new Set(L.map(l=>l.ae))].sort();
+function mesesDoAno(a){return a?mesesEv.filter(m=>'20'+m.split('/')[1]===a):mesesEv;}
+function cascata(idAno,idMes,fn){const sa=document.getElementById(idAno),sm=document.getElementById(idMes);
+ const ant=sm.value;opts(sm,mesesDoAno(sa.value),'Mês do evento: todos',fn);
+ if(mesesDoAno(sa.value).includes(ant))sm.value=ant;}
+opts(document.getElementById('fAnoEv'),anosEv,'Ano do evento: todos',()=>{cascata('fAnoEv','fMesEv',drawEv);drawEv();});
+opts(document.getElementById('fMesEv'),mesesEv,'Mês do evento: todos',drawEv);
+opts(document.getElementById('fEspEv'),[...new Set(C.map(c=>c.espaco))].sort(),'Espaço: todos',drawEv);
+opts(document.getElementById('fVendEv'),[...new Set(C.map(c=>c.vendedor))].sort(),'Vendedor: todos',drawEv);
+opts(document.getElementById('fConfEv'),['Conferido','Aguardando conferência','Só custo (sem RE)'],'Status: todos',drawEv);
+const abertos=new Set();
+function meEv(c){const[a,m]=c.dte.split('-');return MESES[+m-1]+'/'+a.slice(2);}
+window._drawEv = drawEv; function drawEv(){
+ const fa=document.getElementById('fAnoEv').value,fm=document.getElementById('fMesEv').value,
+       fe=document.getElementById('fEspEv').value,fv=document.getElementById('fVendEv').value,
+       fs=document.getElementById('fConfEv').value;
+ const okSt=c=>!fs||(fs==='Conferido'?!!c.conf:fs==='Só custo (sem RE)'?c.reg==='CUSTO':!c.conf);
+ const evs=C.filter(c=>(!fa||c.dte.slice(0,4)===fa)&&(!fm||meEv(c)===fm)
+             &&(!fe||c.espaco===fe)&&(!fv||c.vendedor===fv)&&okSt(c))
+            .sort((a,b)=>a.dte<b.dte?-1:1);
+ document.getElementById('contEv').textContent=
+  evs.length+' evento(s) · '+brl(evs.reduce((a,c)=>a+c.vendido,0));
+ document.getElementById('listaEv').innerHTML=evs.map(c=>{
+  const it=L.filter(l=>l.cliente===c.cliente).sort((a,b)=>b.vendido-a.vendido);
+  const ab=abertos.has(c.cliente);
+  return `<div class="ev ${ab?'open':''}" data-c="${c.cliente}">
+  <div class="ev-head" onclick="toggleEv('${c.cliente.replace(/'/g,"\\'")}')">
+   <span class="caret">${ab?'▾':'▸'}</span>
+   <span class="ev-nome">${c.cliente}</span>
+   <span class="badge ${bEsp[c.espaco]||''}">${c.espaco}</span>
+   ${tagReg(c.reg)}${tagConf(c.conf)}
+   <span class="meta">${dbr(c.dte)} · ${c.dia} · ${c.vendedor} · ${c.pax} conv.</span>
+   <span class="ev-vals"><b>${brl(c.vendido)}</b>
+   <span class="${MCOR(c.margem)}">${pc(c.margem)}</span></span></div>
+  <div class="ev-body">
+   <table><thead><tr><th>Produto</th><th>Família</th><th>Cat</th><th class="num">Qtd</th>
+    <th class="num">Tabela</th><th class="num">Vendido</th><th class="num">Custo</th>
+    <th class="num">Lucro</th><th class="num">Margem</th></tr></thead><tbody>
+   ${it.map(l=>{const mg=l.vendido?(l.vendido-l.custo)/l.vendido*100:0;
+    return `<tr><td><strong>${l.produto}</strong></td>
+    <td style="font-size:12px;color:#64748B">${l.familia}</td>
+    <td><span class="badge b-${l.cat.toLowerCase()}">${l.cat}</span></td>
+    <td class="num">${l.qtd}</td><td class="num" style="color:#94A3B8">${brl(l.tabela)}</td>
+    <td class="num"><strong>${brl(l.vendido)}</strong></td>
+    <td class="num" style="color:#94A3B8">${brl(l.custo)}</td>
+    <td class="num green">${brl(l.lucro)}</td>
+    <td class="num ${MCOR(mg)}">${l.vendido?pc(mg):'—'}</td></tr>`;}).join('')}
+   </tbody><tfoot><tr class="tot">
+    <td><strong>TOTAL</strong></td><td colspan="2" style="font-size:11px;color:#94A3B8">${c.nitens} itens</td>
+    <td class="num">—</td><td class="num"><strong>${brl(c.tabela)}</strong></td>
+    <td class="num"><strong>${brl(c.vendido)}</strong></td><td class="num"><strong>${brl(c.custo)}</strong></td>
+    <td class="num"><strong class="green">${brl(c.lucro)}</strong></td>
+    <td class="num"><strong class="${MCOR(c.margem)}">${pc(c.margem)}</strong></td></tr></tfoot></table>
+   <div class="ev-foot">${c.tipo} · vendido em ${dbr(c.dtv)} · ${c.nitens} itens ·
+    ${c.conf?'RE conferido pela Tatyane em '+dbr(c.conf):'RE ainda não conferido pela Tatyane'} ·
+    <a href="${c.link}" target="_blank" style="color:#4F46E5">abrir contrato no Drive ↗</a></div>
+  </div></div>`;}).join('') || '<div class="alert-info">Nenhum evento para este filtro.</div>';}
+function toggleEv(n){abertos.has(n)?abertos.delete(n):abertos.add(n);drawEv();}
+drawEv();
+
+/* ---------- BASE DE LINHAS ---------- */
+document.getElementById('fContrato').oninput=drawLinhas;
+opts(document.getElementById('fAnoLinha'),anosEv,'Ano do evento: todos',()=>{cascata('fAnoLinha','fMesLinha',drawLinhas);drawLinhas();});
+opts(document.getElementById('fMesLinha'),mesesEv,'Mês do evento: todos',drawLinhas);
+opts(document.getElementById('fFam'),[...new Set(L.map(l=>l.familia))].sort(),'Família: todas',drawLinhas);
+opts(document.getElementById('fVend'),[...new Set(L.map(l=>l.vendedor))].sort(),'Vendedor: todos',drawLinhas);
+opts(document.getElementById('fEsp'),[...new Set(L.map(l=>l.espaco))].sort(),'Espaço: todos',drawLinhas);
+opts(document.getElementById('fCat'),['A','B'],'Categoria: todas',drawLinhas);
+opts(document.getElementById('fConfLinha'),['Conferido','Aguardando conferência','Só custo (sem RE)'],'Status: todos',drawLinhas);
+let lk='vendido',ld=-1;
+const sa=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+function drawLinhas(){const f=id=>document.getElementById(id).value;
+ const q=sa(f('fContrato'));
+ let r=L.filter(l=>(!q||sa(l.cliente).includes(q))&&(!f('fAnoLinha')||l.ae===f('fAnoLinha'))&&(!f('fMesLinha')||l.me===f('fMesLinha'))
+  &&(!f('fFam')||l.familia===f('fFam'))&&(!f('fVend')||l.vendedor===f('fVend'))
+  &&(!f('fEsp')||l.espaco===f('fEsp'))&&(!f('fCat')||l.cat===f('fCat'))
+  &&(!f('fConfLinha')||(f('fConfLinha')==='Conferido'?!!l.conf
+      :f('fConfLinha')==='Só custo (sem RE)'?l.reg==='CUSTO':!l.conf)));
+ r=[...r].sort((a,b)=>{const x=a[lk],y=b[lk];return (typeof x==='string'?x.localeCompare(y):x-y)*ld;});
+ document.getElementById('contLinhas').textContent=
+  r.length+' linha(s) · '+brl(r.reduce((a,l)=>a+l.vendido,0));
+ document.querySelector('#tLinhas tbody').innerHTML=r.map(l=>`<tr>
+ <td><strong>${l.produto}</strong></td><td style="font-size:12px;color:#64748B">${l.familia}</td>
+ <td><span class="badge b-${l.cat.toLowerCase()}">${l.cat}</span></td>
+ <td style="font-size:12px">${l.cliente}</td><td style="font-size:12px">${l.vendedor}</td>
+ <td><span class="badge ${bEsp[l.espaco]||''}">${l.espaco}</span></td>
+ <td style="font-size:12px;color:#64748B">${dbr(l.dte)}</td>
+ <td class="num">${l.qtd}</td><td class="num" style="color:#94A3B8">${brl(l.tabela)}</td>
+ <td class="num"><strong>${brl(l.vendido)}</strong></td>
+ <td class="num" style="color:#94A3B8">${brl(l.custo)}</td>
+ <td class="num green">${brl(l.lucro)}</td>
+ <td class="num ${MCOR(l.vendido?(l.vendido-l.custo)/l.vendido*100:0)}">${l.vendido?pc((l.vendido-l.custo)/l.vendido*100):'—'}</td></tr>`).join('')
+ || `<tr><td colspan="13" style="text-align:center;padding:16px;color:#94A3B8">Nenhuma linha para estes filtros${q?' — nenhum contrato com "'+f('fContrato')+'"':''}.</td></tr>`;
+ const st=r.reduce((a,l)=>a+l.tabela,0),sv=r.reduce((a,l)=>a+l.vendido,0),sc=r.reduce((a,l)=>a+l.custo,0);
+ document.getElementById('fLinhas').innerHTML=r.length?`<tr class="tot">
+  <td><strong>TOTAL</strong></td><td colspan="6" style="font-size:11px;color:#94A3B8">${r.length} linhas filtradas</td>
+  <td class="num">—</td><td class="num"><strong>${brl(st)}</strong></td>
+  <td class="num"><strong>${brl(sv)}</strong></td><td class="num"><strong>${brl(sc)}</strong></td>
+  <td class="num"><strong class="green">${brl(sv-sc)}</strong></td>
+  <td class="num"><strong class="${MCOR(sv?(sv-sc)/sv*100:0)}">${sv?pc((sv-sc)/sv*100):'—'}</strong></td></tr>`:'';}
+document.querySelectorAll('#tLinhas th[data-k]').forEach(th=>th.onclick=()=>{
+ const k=th.dataset.k;ld=(lk===k)?-ld:-1;lk=k;drawLinhas();});
+drawLinhas();
+
+/* ---------- CONTRATOS ---------- */
+document.querySelector('#tCtr tbody').innerHTML=[...C].sort((a,b)=>a.dtv<b.dtv?1:-1).map(c=>`<tr>
+ <td><strong>${c.cliente}</strong></td><td>${tagReg(c.reg)}</td><td>${tagConf(c.conf)}</td>
+ <td><span class="badge ${bEsp[c.espaco]||''}">${c.espaco}</span></td>
+ <td style="font-size:12px">${c.tipo}</td><td style="font-size:12px">${c.vendedor}</td>
+ <td style="font-size:12px">${dbr(c.dtv)}</td>
+ <td style="font-size:12px">${dbr(c.dte)} <span style="color:#94A3B8">${c.dia}</span></td>
+ <td class="num">${c.pax}</td><td class="num">${c.nitens}</td>
+ <td class="num" style="color:#94A3B8">${c.reg==='CUSTO'?'—':brl(c.tabela)}</td>
+ <td class="num"><strong>${c.reg==='CUSTO'?'—':brl(c.vendido)}</strong></td>
+ <td class="num" style="color:#94A3B8">${brl(c.custo)}</td>
+ <td class="num ${MCOR(c.margem)}">${c.reg==='CUSTO'?'—':pc(c.margem)}</td>
+ <td><a href="${c.link}" target="_blank" style="color:#4F46E5;font-size:12px">abrir ↗</a></td></tr>`).join('');
+
+function tab(id,btn){document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+ document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');}
+
+}
+
+// Funções globais chamadas por onclick
+function tab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleEv(n){
+  if(window._abertos){window._abertos.has(n)?window._abertos.delete(n):window._abertos.add(n);}
+  if(window._drawEv) window._drawEv();
+}
+
+loadData();
+</script></body></html>
