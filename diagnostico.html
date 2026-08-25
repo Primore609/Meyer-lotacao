@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico dos Painéis — Primore</title>
+<style>
+  :root{
+    --marinho:#173556; --creme:#FFF1DE; --vinho:#BF1C39;
+    --verde:#1B7F4B; --ambar:#B57200; --cinza:#6B7280;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--creme);color:var(--marinho);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+       padding:24px;line-height:1.5}
+  .wrap{max-width:920px;margin:0 auto}
+  header{border-bottom:3px solid var(--marinho);padding-bottom:16px;margin-bottom:24px}
+  h1{margin:0 0 4px;font-size:26px}
+  .sub{color:var(--cinza);font-size:14px}
+  .card{background:#fff;border:1px solid #E3D8C4;border-radius:10px;
+        padding:16px 18px;margin-bottom:14px}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .nome{font-weight:700;font-size:16px;flex:1;min-width:220px}
+  .pill{display:inline-block;padding:4px 12px;border-radius:99px;
+        font-size:13px;font-weight:700;color:#fff;white-space:nowrap}
+  .ok{background:var(--verde)} .falha{background:var(--vinho)}
+  .test{background:var(--cinza)} .aviso{background:var(--ambar)}
+  .det{margin-top:10px;font-size:13px;color:#333;background:#F7F4EE;
+       border-left:3px solid #D9CDB6;padding:10px 12px;border-radius:4px;
+       white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .veredito{background:var(--marinho);color:var(--creme);border-radius:10px;
+            padding:20px 22px;margin-top:24px}
+  .veredito h2{margin:0 0 10px;font-size:19px}
+  .veredito p{margin:0 0 10px}
+  .veredito b{color:#fff}
+  footer{margin-top:22px;font-size:12px;color:var(--cinza)}
+  code{background:#EFE7D8;padding:1px 5px;border-radius:3px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Diagnóstico dos Painéis</h1>
+    <div class="sub">Roda os mesmos pedidos que os painéis fazem e mostra o erro real. Nada é alterado.</div>
+  </header>
+
+  <div id="testes"></div>
+
+  <div class="veredito" id="veredito">
+    <h2>Veredito</h2>
+    <p id="vtexto">Rodando os testes…</p>
+  </div>
+
+  <footer>
+    Origem desta página: <code id="origem"></code> ·
+    Executado em <span id="quando"></span>
+  </footer>
+</div>
+
+<script>
+const API_KEY = "AIzaSyBfQXCnDP3FzBWJ2yJSwwthMScA-otOqiQ";
+
+const CALENDARIOS = [
+  ["Eventos Meyer",          "c_8cc9ttvqasdrob2q56gg7uefjs@group.calendar.google.com"],
+  ["Eventos Giardino",       "c_i9jh05ostkk3vmglbjlh7dtb8g@group.calendar.google.com"],
+  ["Eventos Villa Domênica", "c_d750ce23315aad42af50c94d4d66292a347a4828c4376942dbea3cf6afe73af2@group.calendar.google.com"],
+];
+
+const CAL_CONTROLE = ["Calendário público de controle (feriados)", "pt-br.brazilian#holiday@group.v.calendar.google.com"];
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUIgHwkceXFMcrTJF1V1qPjtxYKRXU-qdbPxXVFr6EAUEgYvp0Y0emRFsoJ1zrLrgNMg/exec";
+
+const resultados = {};
+const alvo = document.getElementById("testes");
+
+document.getElementById("origem").textContent = location.origin || "arquivo local (file://)";
+document.getElementById("quando").textContent = new Date().toLocaleString("pt-BR");
+
+function card(id, nome){
+  const el = document.createElement("div");
+  el.className = "card";
+  el.innerHTML = '<div class="row"><div class="nome">'+nome+'</div>'+
+                 '<span class="pill test" id="p_'+id+'">testando…</span></div>'+
+                 '<div class="det" id="d_'+id+'" style="display:none"></div>';
+  alvo.appendChild(el);
+}
+
+function marcar(id, classe, texto, detalhe){
+  const p = document.getElementById("p_"+id);
+  p.className = "pill " + classe;
+  p.textContent = texto;
+  if(detalhe){
+    const d = document.getElementById("d_"+id);
+    d.style.display = "block";
+    d.textContent = detalhe;
+  }
+}
+
+async function testarCalendario(id, nome, calId){
+  card(id, nome);
+  const url = "https://www.googleapis.com/calendar/v3/calendars/" +
+              encodeURIComponent(calId) +
+              "/events?key=" + API_KEY + "&maxResults=3&singleEvents=true";
+  try{
+    const r = await fetch(url);
+    let corpo = null;
+    try { corpo = await r.json(); } catch(e){}
+    if(r.ok){
+      const n = (corpo && corpo.items) ? corpo.items.length : 0;
+      marcar(id, "ok", "FUNCIONANDO (HTTP 200)", "Retornou " + n + " evento(s).");
+      return {ok:true};
+    }
+    const erro = corpo && corpo.error ? corpo.error : {};
+    const motivo = (erro.errors && erro.errors[0] && erro.errors[0].reason) || "(sem reason)";
+    marcar(id, "falha", "FALHOU (HTTP " + r.status + ")",
+           "reason: " + motivo + "\nmessage: " + (erro.message || "(sem mensagem)"));
+    return {ok:false, status:r.status, motivo:motivo, message:erro.message||""};
+  }catch(e){
+    marcar(id, "falha", "FALHOU (sem resposta)",
+           "A chamada nem chegou a completar. Detalhe do navegador:\n" + e);
+    return {ok:false, status:0, motivo:"network", message:String(e)};
+  }
+}
+
+async function testarScript(){
+  const id = "script";
+  card(id, "Painel de Vendas — Web App do Apps Script");
+  const controle = new AbortController();
+  const t0 = Date.now();
+  const limite = setTimeout(()=>controle.abort(), 45000);
+  try{
+    const r = await fetch(SCRIPT_URL, {signal: controle.signal});
+    clearTimeout(limite);
+    const seg = ((Date.now()-t0)/1000).toFixed(1);
+    const txt = await r.text();
+    let j = null;
+    try { j = JSON.parse(txt); } catch(e){}
+    if(j && !j.error){
+      marcar(id, "ok", "FUNCIONANDO (" + seg + "s)",
+             "updatedAt: " + (j.updatedAt || "(campo ausente)") +
+             "\ncycle: " + (j.cycle || "-") +
+             "\ntotal: " + (j.total !== undefined ? j.total : "-") +
+             "\ncount: " + (j.count !== undefined ? j.count : "-"));
+      resultados.script = {ok:true, updatedAt:j.updatedAt};
+      return;
+    }
+    marcar(id, "falha", "RESPONDEU, MAS NÃO É DADO (" + seg + "s)",
+           "Veio isto no lugar do JSON (primeiros 600 caracteres):\n\n" + txt.slice(0,600));
+    resultados.script = {ok:false, tipo:"resposta-invalida"};
+  }catch(e){
+    clearTimeout(limite);
+    const seg = ((Date.now()-t0)/1000).toFixed(1);
+    const abortado = (e && e.name === "AbortError");
+    marcar(id, "falha", abortado ? "TRAVOU (passou de 45s)" : "FALHOU (" + seg + "s)",
+           abortado
+             ? "O Apps Script aceitou a conexão mas nunca devolveu resposta.\nIsso normalmente é execução longa demais dentro do doGet (ex.: laço de retentativa do Omie) ou autorização perdida."
+             : "Detalhe do navegador:\n" + e + "\n\nSe aparecer 'CORS' ou 'Failed to fetch', costuma ser implantação sem acesso 'Qualquer pessoa'.");
+    resultados.script = {ok:false, tipo: abortado ? "timeout" : "erro"};
+  }
+}
+
+function concluir(){
+  const cals = [resultados.meyer, resultados.giardino, resultados.villa].filter(Boolean);
+  const algumOk = cals.some(c=>c.ok);
+  const controleOk = resultados.controle && resultados.controle.ok;
+  const partes = [];
+
+  if(algumOk){
+    partes.push("<b>Lotação:</b> a chave de API está viva e pelo menos um salão respondeu. Se ainda assim o painel mostra data antiga, o problema é o calendário que falhou aqui em cima — provavelmente deixou de ser público.");
+  } else if(controleOk){
+    partes.push("<b>Lotação:</b> a chave funciona (o calendário público de controle respondeu), mas <b>nenhum dos três calendários da Primore respondeu</b>. Causa: os calendários dos salões não estão mais públicos. Solução: em cada agenda → Configurações → Permissões de acesso → marcar <b>Disponibilizar publicamente</b>.");
+  } else {
+    const m = cals[0] || {};
+    partes.push("<b>Lotação:</b> falhou até no calendário público de controle. O problema é <b>a chave de API</b>, não os calendários. Motivo relatado pelo Google: <code>" + (m.motivo||"?") + "</code>. Solução: gerar uma chave nova no Google Cloud, com a Calendar API ativada e restrição de referenciador para <code>primore609.github.io/*</code>.");
+  }
+
+  if(resultados.script && resultados.script.ok){
+    partes.push("<b>Vendas:</b> o Apps Script respondeu. Última atualização registrada: " + (resultados.script.updatedAt||"?") + ". Se o número na TV está velho, o script roda mas está lendo fonte desatualizada.");
+  } else if(resultados.script && resultados.script.tipo === "timeout"){
+    partes.push("<b>Vendas:</b> o Apps Script <b>não devolve resposta</b> — trava. Caminho: abrir o script → Execuções, ver a última falha; tirar o trabalho pesado de dentro do doGet e passar a gravar o resultado numa planilha por gatilho de tempo, deixando o doGet só entregar o que já está pronto.");
+  } else {
+    partes.push("<b>Vendas:</b> o Apps Script não respondeu como esperado. Ver o detalhe no cartão acima.");
+  }
+
+  partes.push("Se esta página foi aberta com <code>file://</code> em vez de <code>primore609.github.io</code>, o teste da chave pode dar falso negativo por restrição de referenciador. Suba o arquivo no repositório e abra pelo endereço do site.");
+
+  document.getElementById("vtexto").innerHTML = partes.join("</p><p>");
+}
+
+(async function(){
+  resultados.controle  = await testarCalendario("controle", CAL_CONTROLE[0], CAL_CONTROLE[1]);
+  resultados.meyer     = await testarCalendario("meyer",    CALENDARIOS[0][0], CALENDARIOS[0][1]);
+  resultados.giardino  = await testarCalendario("giardino", CALENDARIOS[1][0], CALENDARIOS[1][1]);
+  resultados.villa     = await testarCalendario("villa",    CALENDARIOS[2][0], CALENDARIOS[2][1]);
+  await testarScript();
+  concluir();
+})();
+</script>
+</body>
+</html>
